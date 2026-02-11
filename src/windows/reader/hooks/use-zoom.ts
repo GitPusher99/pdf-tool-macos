@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 
-const MIN_ZOOM = 0.25;
-const MAX_ZOOM = 4.0;
+export const MIN_ZOOM = 0.25;
+export const MAX_ZOOM = 4.0;
 const ZOOM_STEP = 0.25;
 
 export function useZoom(initialZoom = 1.0) {

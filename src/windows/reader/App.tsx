@@ -125,6 +125,7 @@ export default function App() {
             currentPage={currentPage}
             onPageChange={setCurrentPage}
             zoom={zoom}
+            setZoom={setZoom}
             scrollMode={scrollMode}
             onScrollPositionChange={setScrollPosition}
             onScrollToPageReady={handleScrollToPageReady}

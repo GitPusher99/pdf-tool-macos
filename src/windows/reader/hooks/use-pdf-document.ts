@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import * as pdfjsLib from "pdfjs-dist";
 import type { PDFDocumentProxy } from "pdfjs-dist";
+import { logger } from "@shared/lib/logger";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.mjs",
@@ -31,16 +32,24 @@ export function usePdfDocument() {
 
     async function loadPdf() {
       try {
+        logger.debug(`PDF loading — path=${filePath}`);
+        const t0 = performance.now();
         const src = convertFileSrc(filePath);
-        const doc = await pdfjsLib.getDocument(src).promise;
+        const doc = await pdfjsLib.getDocument({
+          url: src,
+          disableAutoFetch: true,
+          disableStream: true,
+        }).promise;
         if (!cancelled) {
           pdfRef.current = doc;
           setPdf(doc);
           setPageCount(doc.numPages);
+          logger.perf(`PDF loaded — ${doc.numPages} pages, ${(performance.now() - t0).toFixed(1)}ms`);
         }
       } catch (err) {
         if (!cancelled) {
           setError(`Failed to load PDF: ${err}`);
+          logger.error(`PDF load failed — ${err}`);
         }
       } finally {
         if (!cancelled) setLoading(false);

@@ -1,6 +1,8 @@
 import { useRef, useEffect, useState } from "react";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import { cn } from "@shared/lib/utils";
+import { enqueueRender } from "../lib/render-queue";
+import { logger } from "@shared/lib/logger";
 
 interface ThumbnailListProps {
   pdf: PDFDocumentProxy;
@@ -53,14 +55,19 @@ export function ThumbnailList({
     return () => observer.disconnect();
   }, [pageCount]);
 
-  // Generate thumbnails for visible pages (R4: removed thumbnails from deps, use ref to track)
+  // Generate thumbnails for visible pages via shared render queue (low priority)
   useEffect(() => {
     let cancelled = false;
 
-    async function generateThumbnails() {
-      for (const pageNum of visiblePages) {
-        if (generatedPagesRef.current.has(pageNum) || cancelled) continue;
-        generatedPagesRef.current.add(pageNum);
+    for (const pageNum of visiblePages) {
+      if (generatedPagesRef.current.has(pageNum)) continue;
+      generatedPagesRef.current.add(pageNum);
+
+      logger.debug(`thumbnail enqueue — page=${pageNum}`);
+      const t0 = performance.now();
+
+      enqueueRender(async () => {
+        if (cancelled) return;
 
         try {
           const page = await pdf.getPage(pageNum);
@@ -78,16 +85,16 @@ export function ThumbnailList({
 
           if (!cancelled) {
             setThumbnails((prev) => new Map(prev).set(pageNum, url));
+            logger.perf(`thumbnail page ${pageNum} done — ${(performance.now() - t0).toFixed(1)}ms`);
           } else {
             URL.revokeObjectURL(url);
           }
         } catch (err) {
-          console.error(`Thumbnail generation failed for page ${pageNum}:`, err);
+          logger.error(`Thumbnail generation failed for page ${pageNum}:`, err);
         }
-      }
+      }, 1000 + pageNum);
     }
 
-    generateThumbnails();
     return () => {
       cancelled = true;
     };

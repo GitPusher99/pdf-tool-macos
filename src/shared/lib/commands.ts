@@ -39,3 +39,7 @@ export async function getBooksDirectory(): Promise<string> {
 export async function revealInFinder(path: string): Promise<void> {
   return invoke("reveal_in_finder", { path });
 }
+
+export async function isDebugEnabled(): Promise<boolean> {
+  return invoke<boolean>("is_debug_enabled");
+}

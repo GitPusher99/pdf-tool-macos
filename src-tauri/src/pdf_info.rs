@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
-use std::time::SystemTime;
+use std::time::{Instant, SystemTime};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PdfInfo {
@@ -47,6 +47,85 @@ mod hex {
     }
 }
 
+// --- Persistent hash cache ---
+
+fn hash_cache_path() -> PathBuf {
+    crate::icloud::get_base_dir().join("hash-cache.json")
+}
+
+fn hash_cache() -> &'static Mutex<HashMap<String, String>> {
+    static CACHE: OnceLock<Mutex<HashMap<String, String>>> = OnceLock::new();
+    CACHE.get_or_init(|| {
+        let path = hash_cache_path();
+        let map = if path.exists() {
+            match std::fs::read_to_string(&path) {
+                Ok(data) => serde_json::from_str(&data).unwrap_or_default(),
+                Err(e) => {
+                    log::warn!("Failed to load hash cache: {}", e);
+                    HashMap::new()
+                }
+            }
+        } else {
+            HashMap::new()
+        };
+        log::info!("Hash cache loaded: {} entries", map.len());
+        Mutex::new(map)
+    })
+}
+
+fn hash_cache_key(path: &Path, mtime_secs: u64, size: u64) -> String {
+    format!("{}:{}:{}", path.display(), mtime_secs, size)
+}
+
+fn save_hash_cache() {
+    if let Ok(cache) = hash_cache().lock() {
+        let path = hash_cache_path();
+        if let Ok(data) = serde_json::to_string(&*cache) {
+            if let Err(e) = std::fs::write(&path, data) {
+                log::warn!("Failed to save hash cache: {}", e);
+            }
+        }
+    }
+}
+
+pub fn compute_hash_cached(path: &Path) -> Result<String, String> {
+    let meta = std::fs::metadata(path).map_err(|e| format!("Failed to get metadata: {}", e))?;
+    let size = meta.len();
+    let mtime_secs = meta
+        .modified()
+        .map_err(|e| format!("Failed to get mtime: {}", e))?
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+
+    let key = hash_cache_key(path, mtime_secs, size);
+
+    if let Ok(cache) = hash_cache().lock() {
+        if let Some(hash) = cache.get(&key) {
+            log::debug!("Hash cache hit: {}", path.display());
+            return Ok(hash.clone());
+        }
+    }
+
+    log::debug!("Hash cache miss: {}", path.display());
+    let start = Instant::now();
+    let hash = compute_hash(path)?;
+    let elapsed = start.elapsed();
+
+    if elapsed.as_millis() > 100 {
+        log::info!("Slow hash for {}: {}ms", path.display(), elapsed.as_millis());
+    }
+
+    if let Ok(mut cache) = hash_cache().lock() {
+        cache.insert(key, hash.clone());
+    }
+    save_hash_cache();
+
+    Ok(hash)
+}
+
+// --- PDF info cache ---
+
 type CacheKey = (PathBuf, SystemTime);
 
 fn pdf_cache() -> &'static Mutex<HashMap<CacheKey, PdfInfo>> {
@@ -80,6 +159,8 @@ pub fn extract_info(path: &Path) -> Result<PdfInfo, String> {
 }
 
 fn extract_info_uncached(path: &Path) -> Result<PdfInfo, String> {
+    let total_start = Instant::now();
+
     let filename = path
         .file_name()
         .and_then(|n| n.to_str())
@@ -90,10 +171,14 @@ fn extract_info_uncached(path: &Path) -> Result<PdfInfo, String> {
         .map_err(|e| format!("Failed to get metadata: {}", e))?
         .len();
 
-    let hash = compute_hash(path)?;
+    let hash_start = Instant::now();
+    let hash = compute_hash_cached(path)?;
+    log::debug!("  hash: {}ms", hash_start.elapsed().as_millis());
 
+    let load_start = Instant::now();
     let doc =
         lopdf::Document::load(path).map_err(|e| format!("Failed to load PDF: {}", e))?;
+    log::debug!("  lopdf load: {}ms", load_start.elapsed().as_millis());
 
     let page_count = doc.get_pages().len() as u32;
 
@@ -122,6 +207,8 @@ fn extract_info_uncached(path: &Path) -> Result<PdfInfo, String> {
                 .unwrap_or("Untitled")
                 .to_string()
         });
+
+    log::debug!("  extract_info total for {}: {}ms", filename, total_start.elapsed().as_millis());
 
     Ok(PdfInfo {
         path: path.to_string_lossy().to_string(),

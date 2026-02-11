@@ -1,15 +1,44 @@
+import { useRef, useState, useEffect } from "react";
 import { Progress } from "@shared/components/ui/progress";
 import { useThumbnail } from "../hooks/use-thumbnail";
 import { openReaderWindow, revealInFinder } from "@shared/lib/commands";
 import type { PdfInfo, ReadingProgress } from "@shared/lib/types";
 import { FileText } from "lucide-react";
+import { logger } from "@shared/lib/logger";
 
 interface BookCardProps {
   book: PdfInfo & { progress?: ReadingProgress };
 }
 
 export function BookCard({ book }: BookCardProps) {
-  const { url: thumbnailUrl, loading } = useThumbnail(book.path, book.hash);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  const renderCount = useRef(0);
+  renderCount.current++;
+  logger.debug(`BookCard render #${renderCount.current}: ${book.title}`);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "100px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const { url: thumbnailUrl, loading } = useThumbnail(
+    book.path,
+    book.hash,
+    visible,
+  );
 
   const progressPercent = book.progress
     ? Math.round(
@@ -29,6 +58,7 @@ export function BookCard({ book }: BookCardProps) {
 
   return (
     <div
+      ref={cardRef}
       className="group flex flex-col cursor-pointer rounded-lg p-2 transition-colors hover:bg-accent"
       onDoubleClick={handleOpen}
       onContextMenu={handleContextMenu}
