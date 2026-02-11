@@ -12,6 +12,10 @@ document.addEventListener(
   { passive: false },
 );
 
+// Prevent WebKit gesture-based native zoom (macOS WKWebView)
+document.addEventListener("gesturestart", (e) => e.preventDefault());
+document.addEventListener("gesturechange", (e) => e.preventDefault());
+
 initLogger().then(() => {
   ReactDOM.createRoot(document.getElementById("root")!).render(<App />);
 });
