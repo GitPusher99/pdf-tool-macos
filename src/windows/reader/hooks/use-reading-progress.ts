@@ -27,7 +27,6 @@ export function useReadingProgress({
 }: UseReadingProgressOptions) {
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavedRef = useRef<string>("");
-  const unlistenRef = useRef<(() => void) | null>(null);
 
   const doSave = useCallback(async () => {
     if (!hash || pageCount === 0) return;
@@ -54,6 +53,11 @@ export function useReadingProgress({
       console.error("Failed to save progress:", err);
     }
   }, [hash, pageCount, currentPage, zoom, scrollMode, scrollPosition]);
+
+  const doSaveRef = useRef(doSave);
+  useEffect(() => {
+    doSaveRef.current = doSave;
+  }, [doSave]);
 
   // Load progress on mount
   useEffect(() => {
@@ -88,14 +92,11 @@ export function useReadingProgress({
   useEffect(() => {
     if (!hash) return;
     const appWindow = getCurrentWindow();
-    appWindow.onCloseRequested(async () => {
-      await doSave();
-    }).then((fn) => {
-      unlistenRef.current = fn;
+    const unlistenPromise = appWindow.onCloseRequested(async () => {
+      await doSaveRef.current();
     });
     return () => {
-      unlistenRef.current?.();
-      unlistenRef.current = null;
+      unlistenPromise.then((fn) => fn());
     };
-  }, [hash, doSave]);
+  }, [hash]);
 }

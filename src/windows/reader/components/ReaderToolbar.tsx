@@ -48,7 +48,7 @@ export function ReaderToolbar({
   };
 
   return (
-    <div data-tauri-drag-region className="flex items-center gap-1 px-3 h-10 border-b border-border shrink-0 select-none">
+    <div className="flex items-center gap-1 px-3 h-10 border-b border-border shrink-0 select-none">
       <Button
         variant="ghost"
         size="icon"

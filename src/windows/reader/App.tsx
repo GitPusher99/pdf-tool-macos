@@ -90,7 +90,11 @@ export default function App() {
 
   return (
     <div className="h-screen flex flex-col bg-background text-foreground">
-      <div data-tauri-drag-region className="h-12 shrink-0 select-none" />
+      <div className="h-12 shrink-0 select-none flex">
+        {/* Traffic light safe zone */}
+        <div className="w-[70px] shrink-0" />
+        <div data-tauri-drag-region className="flex-1 h-full" />
+      </div>
 
       <ReaderToolbar
         currentPage={currentPage}
