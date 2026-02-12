@@ -73,19 +73,32 @@ fn load_local(hash: &str) -> Result<Option<ReadingProgress>, String> {
     read_progress_file(&local_progress_file(hash))
 }
 
-fn save_local_inner(progress: &ReadingProgress) -> Result<(), String> {
+fn save_local_inner(progress: &ReadingProgress) -> Result<ReadingProgress, String> {
     let path = local_progress_file(&progress.hash);
     let current_version = read_progress_file(&path)?
         .map(|p| p.version)
         .unwrap_or(0);
     let mut to_save = progress.clone();
     to_save.version = current_version + 1;
-    write_progress_file(&path, &to_save)
+    write_progress_file(&path, &to_save)?;
+    Ok(to_save)
 }
 
-pub fn save_local(progress: &ReadingProgress) -> Result<(), String> {
+/// Save locally (version+1) then best-effort push to iCloud central if version is newer.
+pub fn save_and_push(progress: &ReadingProgress) -> Result<(), String> {
     let _guard = PROGRESS_LOCK.lock().unwrap();
-    save_local_inner(progress)
+    let saved = save_local_inner(progress)?;
+    if icloud::is_icloud_active() {
+        let central = load_central(&progress.hash).unwrap_or(None);
+        let should_push = match central {
+            Some(c) => saved.version > c.version,
+            None => true,
+        };
+        if should_push {
+            let _ = save_central(&saved);
+        }
+    }
+    Ok(())
 }
 
 fn load_central(hash: &str) -> Result<Option<ReadingProgress>, String> {

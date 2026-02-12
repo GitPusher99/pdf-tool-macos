@@ -88,14 +88,14 @@ export function useReadingProgress({
     };
   }, [hash, currentPage, zoom, doSave]);
 
-  // Periodic save every 30s
+  // Periodic save every 30s (use ref to avoid interval reset on doSave change)
   useEffect(() => {
     if (!hash) return;
-    const interval = setInterval(doSave, 30000);
+    const interval = setInterval(() => doSaveRef.current(), 30000);
     return () => clearInterval(interval);
-  }, [hash, doSave]);
+  }, [hash]);
 
-  // Sync with central (iCloud) every 3s
+  // Sync with central (iCloud) every 2s
   const onRestoreRef = useRef(onRestore);
   useEffect(() => {
     onRestoreRef.current = onRestore;
@@ -116,7 +116,7 @@ export function useReadingProgress({
       } catch {
         // Sync failure is non-critical, retry next interval
       }
-    }, 3000);
+    }, 2000);
     return () => clearInterval(interval);
   }, [hash]);
 

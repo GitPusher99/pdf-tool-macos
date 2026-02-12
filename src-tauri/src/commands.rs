@@ -94,7 +94,7 @@ pub fn save_progress(
     app_handle: tauri::AppHandle,
     progress_data: progress::ReadingProgress,
 ) -> Result<(), String> {
-    progress::save_local(&progress_data)?;
+    progress::save_and_push(&progress_data)?;
     let _ = app_handle.emit("progress:changed", &progress_data);
     Ok(())
 }
