@@ -19,6 +19,7 @@ export default function App() {
   const handleScrollToPageReady = useCallback(
     (fn: (page: number) => void) => {
       scrollToPageRef.current = fn;
+      console.warn(`[SYNC] viewerReady: pendingScroll=${pendingScrollRef.current}`);
       // Viewer ready — execute any pending scroll from an earlier restore
       if (pendingScrollRef.current !== null) {
         const page = pendingScrollRef.current;
@@ -32,6 +33,7 @@ export default function App() {
 
   const handleRestore = useCallback(
     (progress: ReadingProgress) => {
+      console.warn(`[SYNC] restore: page=${progress.current_page}, zoom=${progress.zoom}, version=${progress.version}, scrollReady=${!!scrollToPageRef.current}, pendingScroll=${pendingScrollRef.current}`);
       setCurrentPage(progress.current_page);
       setZoom(progress.zoom);
       if (scrollToPageRef.current) {

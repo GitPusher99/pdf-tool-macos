@@ -46,11 +46,15 @@ export function useReadingProgress({
     // Compare excluding last_read for dedup
     const { last_read: _, ...comparable } = progress;
     const key = JSON.stringify(comparable);
-    if (key === lastSavedRef.current) return;
+    if (key === lastSavedRef.current) {
+      console.warn(`[SYNC] save: page=${currentPage}, zoom=${zoom} (dedup skipped)`);
+      return;
+    }
     lastSavedRef.current = key;
 
     try {
       await saveProgressCmd(progress);
+      console.warn(`[SYNC] save: page=${currentPage}, zoom=${zoom}, hash=${hash.slice(0, 8)} (saved)`);
     } catch (err) {
       console.error("Failed to save progress:", err);
     }
@@ -66,6 +70,7 @@ export function useReadingProgress({
     if (!hash) return;
     loadProgress(hash)
       .then((progress) => {
+        console.warn(`[SYNC] load: hash=${hash.slice(0, 8)}, result=${progress ? `{page:${progress.current_page}, zoom:${progress.zoom}, version:${progress.version}}` : "null"}`);
         if (progress) onRestore(progress);
       })
       .catch((err) => console.error("Failed to load progress:", err));
@@ -101,6 +106,7 @@ export function useReadingProgress({
     const interval = setInterval(async () => {
       try {
         const pulled = await syncProgress(hash);
+        console.warn(`[SYNC] sync: hash=${hash.slice(0, 8)}, pulled=${pulled ? `{page:${pulled.current_page}, zoom:${pulled.zoom}, version:${pulled.version}}` : "null"}`);
         if (pulled) {
           onRestoreRef.current(pulled);
           // Update dedup cache to prevent unnecessary save after restore
@@ -119,9 +125,11 @@ export function useReadingProgress({
     if (!hash) return;
     const appWindow = getCurrentWindow();
     const unlistenPromise = appWindow.onCloseRequested(async () => {
+      console.warn(`[SYNC] close: saving and syncing, hash=${hash.slice(0, 8)}`);
       await doSaveRef.current();
       try {
-        await syncProgress(hash);
+        const pulled = await syncProgress(hash);
+        console.warn(`[SYNC] close-sync: pulled=${pulled ? `{page:${pulled.current_page}, version:${pulled.version}}` : "null"}`);
       } catch {
         // Sync failure on close is non-critical
       }
