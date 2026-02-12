@@ -120,3 +120,21 @@ pub fn reveal_in_finder(path: String) -> Result<(), String> {
 pub fn is_debug_enabled() -> bool {
     std::env::var("PDF_DEBUG").as_deref() == Ok("1")
 }
+
+/// Reset WKWebView native magnification to 1.0 after JS-driven pinch zoom.
+#[tauri::command]
+pub fn reset_magnification(webview_window: tauri::WebviewWindow) {
+    #[cfg(target_os = "macos")]
+    {
+        let _ = webview_window.with_webview(|webview| {
+            use objc2_web_kit::WKWebView;
+            unsafe {
+                let wk: &WKWebView = &*(webview.inner() as *const WKWebView);
+                wk.setMagnification(1.0);
+            }
+        });
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    let _ = webview_window;
+}

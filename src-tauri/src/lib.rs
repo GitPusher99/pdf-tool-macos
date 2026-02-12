@@ -27,6 +27,7 @@ pub fn run() {
             commands::get_books_directory,
             commands::reveal_in_finder,
             commands::is_debug_enabled,
+            commands::reset_magnification,
         ])
         .setup(move |app| {
             let app_handle = app.handle().clone();

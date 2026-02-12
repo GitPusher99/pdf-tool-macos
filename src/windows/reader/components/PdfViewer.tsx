@@ -40,10 +40,13 @@ export function PdfViewer({
   const renderTasksRef = useRef<Map<number, RenderTask>>(new Map());
   const canvasMapRef = useRef<Map<number, HTMLCanvasElement>>(new Map());
   const renderedPagesRef = useRef<Set<string>>(new Set());
+  const renderGenRef = useRef(0);
+  const currentPageRef = useRef(currentPage);
+  currentPageRef.current = currentPage;
   const programmaticScrollRef = useRef(false);
 
-  useDragScroll(containerRef, scrollMode);
-  usePinchZoom({ containerRef, zoom, setZoom, rebindKey: scrollMode });
+  useDragScroll(containerRef, `${scrollMode}-${!!defaultPageInfo}`);
+  usePinchZoom({ containerRef, zoom, setZoom, rebindKey: `${scrollMode}-${!!defaultPageInfo}` });
 
   // Load only the first page dimensions as default for all pages
   useEffect(() => {
@@ -75,27 +78,24 @@ export function PdfViewer({
       const key = `${pageNum}-${zoom}`;
       if (renderedPagesRef.current.has(key)) return;
 
-      const priority = Math.abs(pageNum - currentPage);
+      const priority = Math.abs(pageNum - currentPageRef.current);
       logger.debug(`renderPage request — page=${pageNum}, zoom=${zoom}, priority=${priority}`);
 
       const t0 = performance.now();
+      const gen = renderGenRef.current;
 
       enqueueRender(async () => {
-        // Re-check after waiting in queue
+        // Bail out if a newer zoom generation has started
+        if (gen !== renderGenRef.current) return;
         if (renderedPagesRef.current.has(key)) return;
 
         const canvas = canvasMapRef.current.get(pageNum);
         if (!canvas) return;
 
-        // Cancel previous render for this page
-        const prevTask = renderTasksRef.current.get(pageNum);
-        if (prevTask) {
-          prevTask.cancel();
-          renderTasksRef.current.delete(pageNum);
-        }
-
         try {
           const page: PDFPageProxy = await pdf.getPage(pageNum);
+          if (gen !== renderGenRef.current) return;
+
           const baseViewport = page.getViewport({ scale: 1.0 });
           precisePageInfosRef.current.set(pageNum, {
             width: baseViewport.width,
@@ -105,18 +105,30 @@ export function PdfViewer({
           const dpr = window.devicePixelRatio || 1;
           const viewport = page.getViewport({ scale: zoom * dpr });
 
+          // Render to a temporary canvas to avoid "canvas in use" conflicts.
+          // Each render gets its own canvas — no shared state, no race conditions.
+          const tmpCanvas = document.createElement("canvas");
+          tmpCanvas.width = viewport.width;
+          tmpCanvas.height = viewport.height;
+          const tmpCtx = tmpCanvas.getContext("2d")!;
+
+          const renderTask = page.render({ canvasContext: tmpCtx, viewport });
+          renderTasksRef.current.set(pageNum, renderTask);
+
+          await renderTask.promise;
+          renderTasksRef.current.delete(pageNum);
+
+          // Final generation check before blitting
+          if (gen !== renderGenRef.current) return;
+
+          // Blit completed render to the visible canvas (synchronous, no race)
           canvas.width = viewport.width;
           canvas.height = viewport.height;
           canvas.style.width = `${viewport.width / dpr}px`;
           canvas.style.height = `${viewport.height / dpr}px`;
+          canvas.getContext("2d")!.drawImage(tmpCanvas, 0, 0);
 
-          const ctx = canvas.getContext("2d")!;
-          const renderTask = page.render({ canvasContext: ctx, viewport });
-          renderTasksRef.current.set(pageNum, renderTask);
-
-          await renderTask.promise;
           renderedPagesRef.current.add(key);
-          renderTasksRef.current.delete(pageNum);
           logger.perf(`page ${pageNum} rendered — ${(performance.now() - t0).toFixed(1)}ms (incl. queue wait)`);
         } catch (err: unknown) {
           if (err && typeof err === "object" && "name" in err && (err as { name: string }).name !== "RenderingCancelledException") {
@@ -125,13 +137,19 @@ export function PdfViewer({
         }
       }, priority);
     },
-    [pdf, zoom, currentPage],
+    [pdf, zoom],
   );
 
   // Clear render cache and queue when zoom changes
   useEffect(() => {
     logger.debug(`zoom changed — zoom=${zoom}, clearing queue & cache`);
+    renderGenRef.current++;
     clearRenderQueue();
+    // Cancel all running render tasks so they release their canvases
+    for (const [, task] of renderTasksRef.current) {
+      task.cancel();
+    }
+    renderTasksRef.current.clear();
     renderedPagesRef.current.clear();
   }, [zoom]);
 

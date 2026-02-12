@@ -17,14 +17,32 @@ pub fn open_reader(app_handle: &AppHandle, file_path: &str, hash: &str) -> Resul
         hash
     );
 
-    WebviewWindowBuilder::new(app_handle, &label, WebviewUrl::App(url.into()))
-        .title("PDF Reader")
-        .inner_size(900.0, 800.0)
-        .min_inner_size(500.0, 400.0)
-        .title_bar_style(tauri::TitleBarStyle::Overlay)
-        .hidden_title(true)
-        .build()
-        .map_err(|e| format!("Failed to create reader window: {}", e))?;
+    let webview_window =
+        WebviewWindowBuilder::new(app_handle, &label, WebviewUrl::App(url.into()))
+            .title("PDF Reader")
+            .inner_size(900.0, 800.0)
+            .min_inner_size(500.0, 400.0)
+            .title_bar_style(tauri::TitleBarStyle::Overlay)
+            .hidden_title(true)
+            .build()
+            .map_err(|e| format!("Failed to create reader window: {}", e))?;
+
+    // Enable trackpad pinch-to-zoom by setting WKWebView allowsMagnification
+    #[cfg(target_os = "macos")]
+    {
+        let _ = webview_window.with_webview(|webview| {
+            use objc2_web_kit::WKWebView;
+            unsafe {
+                let wk: &WKWebView = &*(webview.inner() as *const WKWebView);
+                wk.setAllowsMagnification(true);
+                wk.setMagnification(1.0);
+            }
+        });
+    }
+
+    // Suppress unused variable warning on non-macOS platforms
+    #[cfg(not(target_os = "macos"))]
+    let _ = webview_window;
 
     Ok(())
 }

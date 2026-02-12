@@ -4,8 +4,6 @@ import {
   ChevronRight,
   ZoomIn,
   ZoomOut,
-  Rows3,
-  Square,
   Sun,
   Moon,
 } from "lucide-react";
@@ -20,8 +18,6 @@ interface ReaderToolbarProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onZoomReset: () => void;
-  scrollMode: "continuous" | "single";
-  onScrollModeChange: (mode: "continuous" | "single") => void;
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
 }
@@ -34,8 +30,6 @@ export function ReaderToolbar({
   onZoomIn,
   onZoomOut,
   onZoomReset,
-  scrollMode,
-  onScrollModeChange,
   sidebarOpen: _sidebarOpen,
   onToggleSidebar,
 }: ReaderToolbarProps) {
@@ -112,27 +106,6 @@ export function ReaderToolbar({
       </Button>
 
       <div className="flex-1 pointer-events-none" />
-
-      <Button
-        variant={scrollMode === "continuous" ? "secondary" : "ghost"}
-        size="icon"
-        className="size-7"
-        onClick={() => onScrollModeChange("continuous")}
-        title="连续滚动"
-      >
-        <Rows3 className="size-4" />
-      </Button>
-      <Button
-        variant={scrollMode === "single" ? "secondary" : "ghost"}
-        size="icon"
-        className="size-7"
-        onClick={() => onScrollModeChange("single")}
-        title="单页模式"
-      >
-        <Square className="size-4" />
-      </Button>
-
-      <div className="w-px h-4 bg-border mx-1 pointer-events-none" />
 
       <Button
         variant="ghost"

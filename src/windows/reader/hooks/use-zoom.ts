@@ -10,7 +10,7 @@ export function useZoom(initialZoom = 1.0) {
   const setZoom = useCallback((value: number | ((prev: number) => number)) => {
     setZoomState((prev) => {
       const next = typeof value === "function" ? value(prev) : value;
-      return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Math.round(next * 100) / 100));
+      return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Math.round(next * 1000) / 1000));
     });
   }, []);
 

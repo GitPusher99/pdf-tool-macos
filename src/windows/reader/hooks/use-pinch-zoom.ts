@@ -1,4 +1,5 @@
 import { useEffect, useRef, type RefObject } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { MIN_ZOOM, MAX_ZOOM } from "./use-zoom";
 
 const ZOOM_SENSITIVITY = 0.005;
@@ -78,11 +79,13 @@ export function usePinchZoom({
     let baseZoom = 1;
 
     const handleGestureStart = (e: Event) => {
+      if (!container.contains(e.target as Node)) return;
       e.preventDefault();
       baseZoom = zoomRef.current;
     };
 
     const handleGestureChange = (e: Event) => {
+      if (!container.contains(e.target as Node)) return;
       e.preventDefault();
       const ge = e as unknown as GestureEvent;
 
@@ -111,16 +114,22 @@ export function usePinchZoom({
     };
 
     const handleGestureEnd = (e: Event) => {
+      if (!container.contains(e.target as Node)) return;
       e.preventDefault();
+      // Reset WKWebView native magnification to prevent double-zoom
+      invoke("reset_magnification").catch(() => {});
     };
 
-    container.addEventListener("gesturestart", handleGestureStart);
-    container.addEventListener("gesturechange", handleGestureChange);
-    container.addEventListener("gestureend", handleGestureEnd);
+    // WKWebView gesture events only propagate to document level,
+    // so we must listen on document and filter by target containment.
+    const opts: AddEventListenerOptions = { capture: true, passive: false };
+    document.addEventListener("gesturestart", handleGestureStart, opts);
+    document.addEventListener("gesturechange", handleGestureChange, opts);
+    document.addEventListener("gestureend", handleGestureEnd, opts);
     return () => {
-      container.removeEventListener("gesturestart", handleGestureStart);
-      container.removeEventListener("gesturechange", handleGestureChange);
-      container.removeEventListener("gestureend", handleGestureEnd);
+      document.removeEventListener("gesturestart", handleGestureStart, opts);
+      document.removeEventListener("gesturechange", handleGestureChange, opts);
+      document.removeEventListener("gestureend", handleGestureEnd, opts);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerRef, setZoom, rebindKey]);

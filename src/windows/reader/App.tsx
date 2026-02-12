@@ -11,9 +11,6 @@ export default function App() {
   const { pdf, pageCount, loading, error, filePath, hash } = usePdfDocument();
   const { zoom, setZoom, zoomIn, zoomOut, resetZoom } = useZoom();
   const [currentPage, setCurrentPage] = useState(1);
-  const [scrollMode, setScrollMode] = useState<"continuous" | "single">(
-    "continuous",
-  );
   const [scrollPosition, setScrollPosition] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const scrollToPageRef = useRef<((page: number) => void) | null>(null);
@@ -29,13 +26,10 @@ export default function App() {
     (progress: ReadingProgress) => {
       setCurrentPage(progress.current_page);
       setZoom(progress.zoom);
-      setScrollMode(progress.scroll_mode as "continuous" | "single");
       // Scroll restoration happens after render
-      if (progress.scroll_mode === "continuous") {
-        setTimeout(() => {
-          scrollToPageRef.current?.(progress.current_page);
-        }, 300);
-      }
+      setTimeout(() => {
+        scrollToPageRef.current?.(progress.current_page);
+      }, 300);
     },
     [setZoom],
   );
@@ -45,7 +39,7 @@ export default function App() {
     pageCount,
     currentPage,
     zoom,
-    scrollMode,
+    scrollMode: "continuous" as const,
     scrollPosition,
     onRestore: handleRestore,
   });
@@ -53,23 +47,19 @@ export default function App() {
   const handlePageChange = useCallback(
     (page: number) => {
       setCurrentPage(page);
-      if (scrollMode === "continuous") {
-        scrollToPageRef.current?.(page);
-      }
+      scrollToPageRef.current?.(page);
     },
-    [scrollMode],
+    [],
   );
 
   const handleSidebarPageSelect = useCallback(
     (page: number) => {
       setCurrentPage(page);
-      if (scrollMode === "continuous") {
-        setTimeout(() => {
-          scrollToPageRef.current?.(page);
-        }, 50);
-      }
+      setTimeout(() => {
+        scrollToPageRef.current?.(page);
+      }, 50);
     },
-    [scrollMode],
+    [],
   );
 
   if (loading) {
@@ -104,8 +94,6 @@ export default function App() {
         onZoomIn={zoomIn}
         onZoomOut={zoomOut}
         onZoomReset={resetZoom}
-        scrollMode={scrollMode}
-        onScrollModeChange={setScrollMode}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
@@ -130,7 +118,7 @@ export default function App() {
             onPageChange={setCurrentPage}
             zoom={zoom}
             setZoom={setZoom}
-            scrollMode={scrollMode}
+            scrollMode="continuous"
             onScrollPositionChange={setScrollPosition}
             onScrollToPageReady={handleScrollToPageReady}
           />

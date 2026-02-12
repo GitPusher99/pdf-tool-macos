@@ -4,17 +4,15 @@ import "@shared/styles/globals.css";
 import { initLogger } from "@shared/lib/logger";
 
 // Prevent WebView default pinch-zoom globally
+// capture: true is critical for WKWebView — without a capture-phase listener,
+// the native gesture recognizer consumes events before JS bubble phase sees them.
 document.addEventListener(
   "wheel",
   (e) => {
     if (e.ctrlKey) e.preventDefault();
   },
-  { passive: false },
+  { capture: true, passive: false },
 );
-
-// Prevent WebKit gesture-based native zoom (macOS WKWebView)
-document.addEventListener("gesturestart", (e) => e.preventDefault());
-document.addEventListener("gesturechange", (e) => e.preventDefault());
 
 initLogger().then(() => {
   ReactDOM.createRoot(document.getElementById("root")!).render(<App />);
