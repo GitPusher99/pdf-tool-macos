@@ -132,7 +132,7 @@ export function BookCard({ book }: BookCardProps) {
             onDoubleClick={handleOpen}
             title={`${book.title}\n${book.page_count} 页`}
           >
-            <div className="relative aspect-[3/4] w-full overflow-hidden rounded-md bg-muted mb-2">
+            <div className="relative aspect-[3/4] w-full overflow-hidden rounded-md bg-muted mb-2 border border-border">
               {loading ? (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="size-6 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />

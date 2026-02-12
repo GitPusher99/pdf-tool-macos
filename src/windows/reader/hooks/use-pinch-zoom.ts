@@ -4,6 +4,12 @@ import { MIN_ZOOM, MAX_ZOOM } from "./use-zoom";
 
 const ZOOM_SENSITIVITY = 0.005;
 
+/** Scroll target computed by pinch zoom, consumed by layoutEffect */
+export interface PinchScrollTarget {
+  scrollLeft: number;
+  scrollTop: number;
+}
+
 /** WebKit-specific gesture event (macOS Safari / WKWebView) */
 interface GestureEvent extends UIEvent {
   scale: number;
@@ -15,6 +21,7 @@ interface UsePinchZoomOptions {
   containerRef: RefObject<HTMLElement | null>;
   zoom: number;
   setZoom: (value: number | ((prev: number) => number)) => void;
+  pinchScrollTargetRef: RefObject<PinchScrollTarget | null>;
   /** Extra deps that signal when the underlying DOM element changes */
   rebindKey?: unknown;
 }
@@ -23,6 +30,7 @@ export function usePinchZoom({
   containerRef,
   zoom,
   setZoom,
+  pinchScrollTargetRef,
   rebindKey,
 }: UsePinchZoomOptions) {
   const zoomRef = useRef(zoom);
@@ -55,14 +63,12 @@ export function usePinchZoom({
 
       if (newZoom === oldZoom) return;
 
+      const scale = newZoom / oldZoom;
+      pinchScrollTargetRef.current = {
+        scrollLeft: contentX * scale - cursorX,
+        scrollTop: contentY * scale - cursorY,
+      };
       setZoom(newZoom);
-
-      // Adjust scroll to keep content under cursor stationary
-      requestAnimationFrame(() => {
-        const scale = newZoom / oldZoom;
-        container.scrollLeft = contentX * scale - cursorX;
-        container.scrollTop = contentY * scale - cursorY;
-      });
     };
 
     container.addEventListener("wheel", handleWheel, { passive: false });
@@ -104,13 +110,12 @@ export function usePinchZoom({
 
       if (newZoom === oldZoom) return;
 
+      const scale = newZoom / oldZoom;
+      pinchScrollTargetRef.current = {
+        scrollLeft: contentX * scale - cursorX,
+        scrollTop: contentY * scale - cursorY,
+      };
       setZoom(newZoom);
-
-      requestAnimationFrame(() => {
-        const scale = newZoom / oldZoom;
-        container.scrollLeft = contentX * scale - cursorX;
-        container.scrollTop = contentY * scale - cursorY;
-      });
     };
 
     const handleGestureEnd = (e: Event) => {

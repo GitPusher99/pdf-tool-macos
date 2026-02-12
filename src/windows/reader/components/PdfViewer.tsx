@@ -1,7 +1,7 @@
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useLayoutEffect, useState, useCallback } from "react";
 import type { PDFDocumentProxy, PDFPageProxy, RenderTask } from "pdfjs-dist";
 import { useDragScroll } from "../hooks/use-drag-scroll";
-import { usePinchZoom } from "../hooks/use-pinch-zoom";
+import { usePinchZoom, type PinchScrollTarget } from "../hooks/use-pinch-zoom";
 import { enqueueRender, clearRenderQueue } from "../lib/render-queue";
 import { logger } from "@shared/lib/logger";
 
@@ -45,8 +45,38 @@ export function PdfViewer({
   currentPageRef.current = currentPage;
   const programmaticScrollRef = useRef(false);
 
+  const prevZoomRef = useRef(zoom);
+  const scrollTopBeforeRenderRef = useRef(0);
+  const pinchScrollTargetRef = useRef<PinchScrollTarget | null>(null);
+
   useDragScroll(containerRef, `${scrollMode}-${!!defaultPageInfo}`);
-  usePinchZoom({ containerRef, zoom, setZoom, rebindKey: `${scrollMode}-${!!defaultPageInfo}` });
+  usePinchZoom({ containerRef, zoom, setZoom, pinchScrollTargetRef, rebindKey: `${scrollMode}-${!!defaultPageInfo}` });
+
+  // Capture scrollTop during render phase (before DOM commit / scroll anchoring).
+  if (containerRef.current) {
+    scrollTopBeforeRenderRef.current = containerRef.current.scrollTop;
+  }
+
+  // Compensate scrollTop when zoom changes.
+  // Pinch zoom: use cursor-based positioning from pinchScrollTargetRef.
+  // Keyboard/toolbar zoom: use ratio-based compensation.
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (container && prevZoomRef.current !== zoom) {
+      const pinchTarget = pinchScrollTargetRef.current;
+      if (pinchTarget) {
+        container.scrollLeft = pinchTarget.scrollLeft;
+        container.scrollTop = pinchTarget.scrollTop;
+        pinchScrollTargetRef.current = null;
+      } else {
+        const ratio = zoom / prevZoomRef.current;
+        const captured = scrollTopBeforeRenderRef.current;
+        const newScrollTop = captured * ratio;
+        container.scrollTop = newScrollTop;
+      }
+    }
+    prevZoomRef.current = zoom;
+  }, [zoom]);
 
   // Load only the first page dimensions as default for all pages
   useEffect(() => {
@@ -120,6 +150,8 @@ export function PdfViewer({
 
           // Final generation check before blitting
           if (gen !== renderGenRef.current) return;
+          // Ensure canvas ref still points to the same element (not unmounted/remounted)
+          if (canvasMapRef.current.get(pageNum) !== canvas) return;
 
           // Blit completed render to the visible canvas (synchronous, no race)
           canvas.width = viewport.width;
@@ -142,7 +174,6 @@ export function PdfViewer({
 
   // Clear render cache and queue when zoom changes
   useEffect(() => {
-    logger.debug(`zoom changed — zoom=${zoom}, clearing queue & cache`);
     renderGenRef.current++;
     clearRenderQueue();
     // Cancel all running render tasks so they release their canvases
@@ -193,6 +224,7 @@ export function PdfViewer({
   // Render visible pages (rootMargin + shouldRender ±1 already provides buffer)
   useEffect(() => {
     if (scrollMode !== "continuous") return;
+    clearRenderQueue();
     logger.debug(`visiblePages changed — pages=[${[...visiblePages].sort((a, b) => a - b).join(", ")}]`);
     for (const pageNum of visiblePages) {
       renderPage(pageNum);
@@ -318,7 +350,7 @@ export function PdfViewer({
 
   // Continuous scroll mode
   return (
-    <div ref={containerRef} className="h-full overflow-auto bg-muted/30">
+    <div ref={containerRef} className="h-full overflow-auto bg-muted/30" style={{ overflowAnchor: "none" }}>
       <div className="flex flex-col items-center gap-2 py-4">
         {Array.from({ length: pageCount }, (_, i) => {
           const pageNum = i + 1;
@@ -340,7 +372,12 @@ export function PdfViewer({
               {shouldRender && (
                 <canvas
                   ref={(el) => {
-                    if (el) canvasMapRef.current.set(pageNum, el);
+                    if (el) {
+                      canvasMapRef.current.set(pageNum, el);
+                    } else {
+                      canvasMapRef.current.delete(pageNum);
+                      renderedPagesRef.current.delete(`${pageNum}-${zoom}`);
+                    }
                   }}
                   className="absolute top-0 left-0"
                 />

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import type { PdfInfo, ReadingProgress, SortKey } from "@shared/lib/types";
 import { scanBooks, loadProgress } from "@shared/lib/commands";
-import { onBooksChanged } from "@shared/lib/events";
+import { onBooksChanged, onProgressChanged } from "@shared/lib/events";
 import { logger } from "@shared/lib/logger";
 
 interface BookWithProgress extends PdfInfo {
@@ -70,6 +70,19 @@ export function useBooks() {
       unlistenPromise.then((unlisten) => unlisten());
     };
   }, [refresh]);
+
+  useEffect(() => {
+    const unlistenPromise = onProgressChanged((progress) => {
+      setBooks((prev) =>
+        prev.map((book) =>
+          book.hash === progress.hash ? { ...book, progress } : book,
+        ),
+      );
+    });
+    return () => {
+      unlistenPromise.then((unlisten) => unlisten());
+    };
+  }, []);
 
   const filtered = useMemo(() => {
     let result = books;

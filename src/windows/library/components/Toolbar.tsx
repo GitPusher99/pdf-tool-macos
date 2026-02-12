@@ -30,7 +30,7 @@ export function Toolbar({
   onSortChange,
   onRefresh,
 }: ToolbarProps) {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const [importing, setImporting] = useState(false);
 
   const handleImport = async () => {
@@ -68,9 +68,7 @@ export function Toolbar({
   };
 
   const toggleTheme = () => {
-    if (theme === "light") setTheme("dark");
-    else if (theme === "dark") setTheme("system");
-    else setTheme("light");
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
 
   return (
@@ -95,7 +93,7 @@ export function Toolbar({
       </Button>
       <div className="flex-1" />
       <Button variant="ghost" size="icon" onClick={toggleTheme} className="size-8">
-        {theme === "dark" ? (
+        {resolvedTheme === "dark" ? (
           <Moon className="size-4" />
         ) : (
           <Sun className="size-4" />

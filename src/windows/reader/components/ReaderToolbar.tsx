@@ -33,12 +33,10 @@ export function ReaderToolbar({
   sidebarOpen: _sidebarOpen,
   onToggleSidebar,
 }: ReaderToolbarProps) {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
 
   const toggleTheme = () => {
-    if (theme === "light") setTheme("dark");
-    else if (theme === "dark") setTheme("system");
-    else setTheme("light");
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
 
   return (
@@ -113,7 +111,7 @@ export function ReaderToolbar({
         className="size-7"
         onClick={toggleTheme}
       >
-        {theme === "dark" ? (
+        {resolvedTheme === "dark" ? (
           <Moon className="size-4" />
         ) : (
           <Sun className="size-4" />

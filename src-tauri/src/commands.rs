@@ -2,6 +2,7 @@ use crate::{icloud, pdf_info, progress, window};
 use std::fs;
 use std::path::PathBuf;
 use std::time::Instant;
+use tauri::Emitter;
 
 #[tauri::command]
 pub fn scan_books() -> Result<Vec<pdf_info::PdfInfo>, String> {
@@ -89,8 +90,13 @@ pub fn load_progress(hash: String) -> Result<Option<progress::ReadingProgress>, 
 }
 
 #[tauri::command]
-pub fn save_progress(progress_data: progress::ReadingProgress) -> Result<(), String> {
-    progress::save(&progress_data)
+pub fn save_progress(
+    app_handle: tauri::AppHandle,
+    progress_data: progress::ReadingProgress,
+) -> Result<(), String> {
+    progress::save(&progress_data)?;
+    let _ = app_handle.emit("progress:changed", &progress_data);
+    Ok(())
 }
 
 #[tauri::command]
