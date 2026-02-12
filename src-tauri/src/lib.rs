@@ -23,6 +23,7 @@ pub fn run() {
             commands::get_pdf_outline,
             commands::load_progress,
             commands::save_progress,
+            commands::sync_progress,
             commands::open_reader_window,
             commands::get_books_directory,
             commands::reveal_in_finder,

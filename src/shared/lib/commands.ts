@@ -54,6 +54,12 @@ export async function renamePdf(
   return invoke("rename_pdf", { filePath, newFilename });
 }
 
+export async function syncProgress(
+  hash: string,
+): Promise<ReadingProgress | null> {
+  return invoke("sync_progress", { hash });
+}
+
 export async function isDebugEnabled(): Promise<boolean> {
   return invoke<boolean>("is_debug_enabled");
 }

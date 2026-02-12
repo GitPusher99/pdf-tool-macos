@@ -94,9 +94,14 @@ pub fn save_progress(
     app_handle: tauri::AppHandle,
     progress_data: progress::ReadingProgress,
 ) -> Result<(), String> {
-    progress::save(&progress_data)?;
+    progress::save_local(&progress_data)?;
     let _ = app_handle.emit("progress:changed", &progress_data);
     Ok(())
+}
+
+#[tauri::command]
+pub fn sync_progress(hash: String) -> Result<Option<progress::ReadingProgress>, String> {
+    progress::sync(&hash)
 }
 
 #[tauri::command]
@@ -148,12 +153,9 @@ pub fn delete_pdf(file_path: String, hash: String) -> Result<(), String> {
     trash::delete(&path).map_err(|e| format!("Failed to move to trash: {}", e))?;
     log::info!("delete_pdf: moved to trash: {}", file_path);
 
-    // Remove associated progress file if it exists
-    let progress_path = icloud::get_progress_dir().join(format!("{}.json", hash));
-    if progress_path.exists() {
-        let _ = fs::remove_file(&progress_path);
-        log::info!("delete_pdf: removed progress for {}", hash);
-    }
+    // Remove associated progress files (both local and central)
+    progress::delete(&hash);
+    log::info!("delete_pdf: removed progress for {}", hash);
 
     Ok(())
 }

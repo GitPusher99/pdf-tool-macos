@@ -21,6 +21,7 @@ export interface ReadingProgress {
   scroll_mode: "continuous" | "single";
   scroll_position: number;
   last_read: string;
+  version: number;
 }
 
 export type SortKey = "title" | "recent" | "size";

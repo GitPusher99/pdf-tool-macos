@@ -40,14 +40,32 @@ pub fn get_progress_dir() -> PathBuf {
     get_base_dir().join("Progress")
 }
 
+pub fn get_local_progress_dir() -> PathBuf {
+    dirs::home_dir()
+        .unwrap_or_else(std::env::temp_dir)
+        .join("Library")
+        .join("Application Support")
+        .join("com.yangguanlin.pdf-reader")
+        .join("Progress")
+}
+
+pub fn is_icloud_active() -> bool {
+    let base = get_base_dir();
+    get_icloud_base().map_or(false, |icloud| base == icloud)
+}
+
 pub fn ensure_directories() -> Result<(), String> {
     let books = get_books_dir();
     let progress = get_progress_dir();
+    let local_progress = get_local_progress_dir();
 
     std::fs::create_dir_all(&books).map_err(|e| format!("Failed to create Books dir: {}", e))?;
     std::fs::create_dir_all(&progress)
         .map_err(|e| format!("Failed to create Progress dir: {}", e))?;
+    std::fs::create_dir_all(&local_progress)
+        .map_err(|e| format!("Failed to create local Progress dir: {}", e))?;
 
     log::info!("Directories initialized at: {}", get_base_dir().display());
+    log::info!("Local progress dir: {}", local_progress.display());
     Ok(())
 }

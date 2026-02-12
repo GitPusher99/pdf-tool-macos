@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from "react";
 import {
   loadProgress,
   saveProgress as saveProgressCmd,
+  syncProgress,
 } from "@shared/lib/commands";
 import type { ReadingProgress } from "@shared/lib/types";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -39,6 +40,7 @@ export function useReadingProgress({
       scroll_mode: scrollMode,
       scroll_position: scrollPosition,
       last_read: new Date().toISOString(),
+      version: 0, // Backend auto-increments
     };
 
     // Compare excluding last_read for dedup
@@ -88,12 +90,41 @@ export function useReadingProgress({
     return () => clearInterval(interval);
   }, [hash, doSave]);
 
-  // Save on window close
+  // Sync with central (iCloud) every 3s
+  const onRestoreRef = useRef(onRestore);
+  useEffect(() => {
+    onRestoreRef.current = onRestore;
+  }, [onRestore]);
+
+  useEffect(() => {
+    if (!hash) return;
+    const interval = setInterval(async () => {
+      try {
+        const pulled = await syncProgress(hash);
+        if (pulled) {
+          onRestoreRef.current(pulled);
+          // Update dedup cache to prevent unnecessary save after restore
+          const { last_read: _, ...comparable } = { ...pulled, version: 0 };
+          lastSavedRef.current = JSON.stringify(comparable);
+        }
+      } catch {
+        // Sync failure is non-critical, retry next interval
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [hash]);
+
+  // Save and sync on window close
   useEffect(() => {
     if (!hash) return;
     const appWindow = getCurrentWindow();
     const unlistenPromise = appWindow.onCloseRequested(async () => {
       await doSaveRef.current();
+      try {
+        await syncProgress(hash);
+      } catch {
+        // Sync failure on close is non-critical
+      }
     });
     return () => {
       unlistenPromise.then((fn) => fn());
