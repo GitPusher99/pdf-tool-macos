@@ -28,6 +28,9 @@ export function useReadingProgress({
 }: UseReadingProgressOptions) {
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavedRef = useRef<string>("");
+  const lastRestoreRef = useRef(0);
+  const scrollPositionRef = useRef(scrollPosition);
+  scrollPositionRef.current = scrollPosition;
 
   const doSave = useCallback(async () => {
     if (!hash || pageCount === 0) return;
@@ -38,13 +41,20 @@ export function useReadingProgress({
       total_pages: pageCount,
       zoom,
       scroll_mode: scrollMode,
-      scroll_position: scrollPosition,
+      scroll_position: scrollPositionRef.current,
       last_read: new Date().toISOString(),
       version: 0, // Backend auto-increments
     };
 
-    // Compare excluding last_read for dedup
-    const { last_read: _, ...comparable } = progress;
+    // Post-restore cooldown: skip save within 3s after sync restore
+    const timeSinceRestore = Date.now() - lastRestoreRef.current;
+    if (timeSinceRestore < 3000) {
+      console.warn(`[SYNC] save: page=${currentPage} (post-restore cooldown ${timeSinceRestore}ms, skipped)`);
+      return;
+    }
+
+    // Compare excluding last_read and scroll_position for dedup
+    const { last_read: _, scroll_position: _sp, ...comparable } = progress;
     const key = JSON.stringify(comparable);
     if (key === lastSavedRef.current) {
       console.warn(`[SYNC] save: page=${currentPage}, zoom=${zoom} (dedup skipped)`);
@@ -58,7 +68,7 @@ export function useReadingProgress({
     } catch (err) {
       console.error("Failed to save progress:", err);
     }
-  }, [hash, pageCount, currentPage, zoom, scrollMode, scrollPosition]);
+  }, [hash, pageCount, currentPage, zoom, scrollMode]);
 
   const doSaveRef = useRef(doSave);
   useEffect(() => {
@@ -82,11 +92,12 @@ export function useReadingProgress({
   useEffect(() => {
     if (!hash) return;
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    saveTimeoutRef.current = setTimeout(doSave, 1000);
+    saveTimeoutRef.current = setTimeout(() => doSaveRef.current(), 1000);
     return () => {
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
-  }, [hash, currentPage, zoom, doSave]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hash, currentPage, zoom]);
 
   // Periodic save every 30s (use ref to avoid interval reset on doSave change)
   useEffect(() => {
@@ -108,9 +119,10 @@ export function useReadingProgress({
         const pulled = await syncProgress(hash);
         console.warn(`[SYNC] sync: hash=${hash.slice(0, 8)}, pulled=${pulled ? `{page:${pulled.current_page}, zoom:${pulled.zoom}, version:${pulled.version}}` : "null"}`);
         if (pulled) {
+          lastRestoreRef.current = Date.now();
           onRestoreRef.current(pulled);
           // Update dedup cache to prevent unnecessary save after restore
-          const { last_read: _, ...comparable } = { ...pulled, version: 0 };
+          const { last_read: _, scroll_position: _sp, ...comparable } = { ...pulled, version: 0 };
           lastSavedRef.current = JSON.stringify(comparable);
         }
       } catch {
@@ -126,6 +138,7 @@ export function useReadingProgress({
     const appWindow = getCurrentWindow();
     const unlistenPromise = appWindow.onCloseRequested(async () => {
       console.warn(`[SYNC] close: saving and syncing, hash=${hash.slice(0, 8)}`);
+      lastRestoreRef.current = 0; // Clear cooldown to ensure close save is not skipped
       await doSaveRef.current();
       try {
         const pulled = await syncProgress(hash);
