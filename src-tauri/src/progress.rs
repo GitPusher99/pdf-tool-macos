@@ -30,7 +30,7 @@ impl Default for ReadingProgress {
             zoom: 1.0,
             scroll_mode: "continuous".to_string(),
             scroll_position: 0.0,
-            last_read: chrono::Utc::now().to_rfc3339(),
+            last_read: chrono::Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string(),
             version: 0,
         }
     }
@@ -84,20 +84,16 @@ fn save_local_inner(progress: &ReadingProgress) -> Result<ReadingProgress, Strin
     Ok(to_save)
 }
 
-/// Save locally (version+1) then best-effort push to iCloud central if version is newer.
-pub fn save_and_push(progress: &ReadingProgress) -> Result<(), String> {
+/// Save locally (version+1). Central is updated only via sync_inner to avoid iCloud conflicts.
+pub fn save_local(progress: &ReadingProgress) -> Result<(), String> {
     let _guard = PROGRESS_LOCK.lock().unwrap();
     let saved = save_local_inner(progress)?;
-    if icloud::is_icloud_active() {
-        let central = load_central(&progress.hash).unwrap_or(None);
-        let should_push = match central {
-            Some(c) => saved.version > c.version,
-            None => true,
-        };
-        if should_push {
-            let _ = save_central(&saved);
-        }
-    }
+    log::warn!(
+        "save: hash={}, page={}, version={}",
+        &saved.hash[..8.min(saved.hash.len())],
+        saved.current_page,
+        saved.version
+    );
     Ok(())
 }
 
@@ -120,22 +116,53 @@ fn sync_inner(hash: &str) -> Result<Option<ReadingProgress>, String> {
     match (local, central) {
         (Some(l), Some(c)) => {
             if l.version > c.version {
-                // Push local to central
+                log::info!(
+                    "sync: hash={}, pushing local v{} (page={}) over central v{} (page={})",
+                    &hash[..8.min(hash.len())], l.version, l.current_page, c.version, c.current_page
+                );
                 save_central(&l)?;
                 Ok(None)
             } else if c.version > l.version {
-                // Pull central to local
+                log::info!(
+                    "sync: hash={}, pulling central v{} (page={}) over local v{} (page={})",
+                    &hash[..8.min(hash.len())], c.version, c.current_page, l.version, l.current_page
+                );
                 write_progress_file(&local_progress_file(hash), &c)?;
                 Ok(Some(c))
             } else {
-                Ok(None)
+                // Versions equal — use last_read as tiebreaker
+                if c.last_read > l.last_read {
+                    log::warn!(
+                        "sync: hash={}, equal v{} but central is newer (last_read), pulling page={}",
+                        &hash[..8.min(hash.len())], c.version, c.current_page
+                    );
+                    write_progress_file(&local_progress_file(hash), &c)?;
+                    Ok(Some(c))
+                } else if l.last_read > c.last_read {
+                    log::warn!(
+                        "sync: hash={}, equal v{} but local is newer (last_read), pushing page={}",
+                        &hash[..8.min(hash.len())], l.version, l.current_page
+                    );
+                    save_central(&l)?;
+                    Ok(None)
+                } else {
+                    Ok(None)
+                }
             }
         }
         (Some(l), None) => {
+            log::info!(
+                "sync: hash={}, no central, pushing local v{} (page={})",
+                &hash[..8.min(hash.len())], l.version, l.current_page
+            );
             save_central(&l)?;
             Ok(None)
         }
         (None, Some(c)) => {
+            log::info!(
+                "sync: hash={}, no local, pulling central v{} (page={})",
+                &hash[..8.min(hash.len())], c.version, c.current_page
+            );
             write_progress_file(&local_progress_file(hash), &c)?;
             Ok(Some(c))
         }

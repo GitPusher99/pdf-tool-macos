@@ -7,6 +7,11 @@ import {
 import type { ReadingProgress } from "@shared/lib/types";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
+function dedupKey(p: ReadingProgress): string {
+  const { last_read: _, scroll_position: _sp, ...rest } = { ...p, version: 0 };
+  return JSON.stringify(rest);
+}
+
 interface UseReadingProgressOptions {
   hash: string;
   pageCount: number;
@@ -53,9 +58,7 @@ export function useReadingProgress({
       return;
     }
 
-    // Compare excluding last_read and scroll_position for dedup
-    const { last_read: _, scroll_position: _sp, ...comparable } = progress;
-    const key = JSON.stringify(comparable);
+    const key = dedupKey(progress);
     if (key === lastSavedRef.current) {
       console.warn(`[SYNC] save: page=${currentPage}, zoom=${zoom} (dedup skipped)`);
       return;
@@ -81,7 +84,10 @@ export function useReadingProgress({
     loadProgress(hash)
       .then((progress) => {
         console.warn(`[SYNC] load: hash=${hash.slice(0, 8)}, result=${progress ? `{page:${progress.current_page}, zoom:${progress.zoom}, version:${progress.version}}` : "null"}`);
-        if (progress) onRestore(progress);
+        if (progress) {
+          onRestore(progress);
+          lastSavedRef.current = dedupKey(progress);
+        }
       })
       .catch((err) => console.error("Failed to load progress:", err));
     // Only run once on mount
@@ -121,9 +127,7 @@ export function useReadingProgress({
         if (pulled) {
           lastRestoreRef.current = Date.now();
           onRestoreRef.current(pulled);
-          // Update dedup cache to prevent unnecessary save after restore
-          const { last_read: _, scroll_position: _sp, ...comparable } = { ...pulled, version: 0 };
-          lastSavedRef.current = JSON.stringify(comparable);
+          lastSavedRef.current = dedupKey(pulled);
         }
       } catch {
         // Sync failure is non-critical, retry next interval
