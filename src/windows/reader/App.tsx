@@ -14,10 +14,18 @@ export default function App() {
   const [scrollPosition, setScrollPosition] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const scrollToPageRef = useRef<((page: number) => void) | null>(null);
+  const pendingScrollRef = useRef<number | null>(null);
 
   const handleScrollToPageReady = useCallback(
     (fn: (page: number) => void) => {
       scrollToPageRef.current = fn;
+      // Viewer ready — execute any pending scroll from an earlier restore
+      if (pendingScrollRef.current !== null) {
+        const page = pendingScrollRef.current;
+        pendingScrollRef.current = null;
+        // Wait for zoom layout to settle, consistent with the ready path
+        setTimeout(() => fn(page), 300);
+      }
     },
     [],
   );
@@ -26,10 +34,15 @@ export default function App() {
     (progress: ReadingProgress) => {
       setCurrentPage(progress.current_page);
       setZoom(progress.zoom);
-      // Scroll restoration happens after render
-      setTimeout(() => {
-        scrollToPageRef.current?.(progress.current_page);
-      }, 300);
+      if (scrollToPageRef.current) {
+        // Viewer already ready — delay scroll to let zoom layout settle
+        setTimeout(() => {
+          scrollToPageRef.current?.(progress.current_page);
+        }, 300);
+      } else {
+        // Viewer not ready yet — record pending scroll
+        pendingScrollRef.current = progress.current_page;
+      }
     },
     [setZoom],
   );

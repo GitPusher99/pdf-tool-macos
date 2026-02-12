@@ -314,10 +314,12 @@ export function PdfViewer({
     [scrollMode],
   );
 
-  // Expose scrollToPage to parent via callback
+  // Expose scrollToPage to parent via callback — only after page divs exist in DOM
   useEffect(() => {
-    onScrollToPageReady?.(scrollToPage);
-  }, [scrollToPage, onScrollToPageReady]);
+    if (defaultPageInfo) {
+      onScrollToPageReady?.(scrollToPage);
+    }
+  }, [scrollToPage, onScrollToPageReady, defaultPageInfo]);
 
   if (!defaultPageInfo) {
     return (
