@@ -33,7 +33,7 @@ pnpm tauri build
 | 阶段 | 输出路径 |
 |------|---------|
 | 前端构建 | `dist/` |
-| Rust 二进制 | `src-tauri/target/release/pdf-reader` |
+| Rust 二进制 | `src-tauri/target/release/pdf-reader-macos` |
 | App Bundle | `src-tauri/target/release/bundle/macos/PDF Reader.app/` |
 | DMG 安装包 | `src-tauri/target/release/bundle/dmg/PDF Reader_0.1.0_aarch64.dmg` |
 

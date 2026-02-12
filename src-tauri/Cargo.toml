@@ -1,12 +1,12 @@
 [package]
-name = "pdf-reader"
+name = "pdf-reader-macos"
 version = "0.1.0"
 description = "A PDF Reader for Mac"
 authors = ["Robin"]
 edition = "2021"
 
 [lib]
-name = "pdf_reader_lib"
+name = "pdf_reader_macos_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
