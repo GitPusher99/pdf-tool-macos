@@ -133,6 +133,18 @@ fn pdf_cache() -> &'static Mutex<HashMap<CacheKey, PdfInfo>> {
     CACHE.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
+/// Remove all cached entries (pdf info + hash) for a given path.
+pub fn invalidate_cache(path: &Path) {
+    if let Ok(mut cache) = pdf_cache().lock() {
+        cache.retain(|(p, _), _| p != path);
+    }
+    if let Ok(mut cache) = hash_cache().lock() {
+        let prefix = format!("{}:", path.display());
+        cache.retain(|k, _| !k.starts_with(&prefix));
+    }
+    save_hash_cache();
+}
+
 pub fn extract_info(path: &Path) -> Result<PdfInfo, String> {
     // Check cache by path + mtime
     let mtime = std::fs::metadata(path)
@@ -193,7 +205,9 @@ fn extract_info_uncached(path: &Path) -> Result<PdfInfo, String> {
                 dict.get(b"Title")
                     .ok()
                     .and_then(|t| match t {
-                        lopdf::Object::String(bytes, _) => String::from_utf8(bytes.clone()).ok(),
+                        lopdf::Object::String(bytes, _) => {
+                            String::from_utf8(bytes.clone()).ok().filter(|s| !s.trim().is_empty())
+                        }
                         _ => None,
                     })
             } else {
