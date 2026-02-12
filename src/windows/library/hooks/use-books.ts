@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import type { PdfInfo, ReadingProgress, SortKey } from "@shared/lib/types";
-import { scanBooks, loadProgress } from "@shared/lib/commands";
+import { scanBooks, loadProgress, syncAllProgress } from "@shared/lib/commands";
 import { onBooksChanged, onProgressChanged } from "@shared/lib/events";
 import { logger } from "@shared/lib/logger";
 
@@ -82,6 +82,40 @@ export function useBooks() {
     return () => {
       unlistenPromise.then((unlisten) => unlisten());
     };
+  }, []);
+
+  // Keep a ref of current book hashes for the sync interval
+  const bookHashesRef = useRef<string[]>([]);
+  useEffect(() => {
+    bookHashesRef.current = books.map((b) => b.hash);
+  }, [books]);
+
+  // Periodically sync all iCloud progress every 3 seconds
+  useEffect(() => {
+    let syncing = false;
+    const interval = setInterval(async () => {
+      if (syncing) return;
+      const hashes = bookHashesRef.current;
+      if (hashes.length === 0) return;
+      syncing = true;
+      try {
+        const updated = await syncAllProgress(hashes);
+        if (updated.length > 0) {
+          const map = new Map(updated.map((p) => [p.hash, p]));
+          setBooks((prev) =>
+            prev.map((book) => {
+              const p = map.get(book.hash);
+              return p ? { ...book, progress: p } : book;
+            }),
+          );
+        }
+      } catch {
+        // ignore sync errors
+      } finally {
+        syncing = false;
+      }
+    }, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   const filtered = useMemo(() => {

@@ -60,6 +60,12 @@ export async function syncProgress(
   return invoke("sync_progress", { hash });
 }
 
+export async function syncAllProgress(
+  hashes: string[],
+): Promise<ReadingProgress[]> {
+  return invoke("sync_all_progress", { hashes });
+}
+
 export async function isDebugEnabled(): Promise<boolean> {
   return invoke<boolean>("is_debug_enabled");
 }

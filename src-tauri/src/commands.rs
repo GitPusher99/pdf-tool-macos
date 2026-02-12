@@ -105,6 +105,11 @@ pub fn sync_progress(hash: String) -> Result<Option<progress::ReadingProgress>, 
 }
 
 #[tauri::command]
+pub fn sync_all_progress(hashes: Vec<String>) -> Result<Vec<progress::ReadingProgress>, String> {
+    progress::sync_all(&hashes)
+}
+
+#[tauri::command]
 pub fn open_reader_window(
     app_handle: tauri::AppHandle,
     file_path: String,

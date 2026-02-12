@@ -136,6 +136,20 @@ pub fn sync(hash: &str) -> Result<Option<ReadingProgress>, String> {
     sync_inner(hash)
 }
 
+/// Batch sync for multiple hashes. Returns only the progresses that were updated from central.
+pub fn sync_all(hashes: &[String]) -> Result<Vec<ReadingProgress>, String> {
+    let _guard = PROGRESS_LOCK.lock().unwrap();
+    let mut updated = Vec::new();
+    for hash in hashes {
+        match sync_inner(hash) {
+            Ok(Some(progress)) => updated.push(progress),
+            Ok(None) => {}
+            Err(e) => log::warn!("sync_all: failed to sync {}: {}", hash, e),
+        }
+    }
+    Ok(updated)
+}
+
 /// Load progress with sync: try central sync first, then local, then central fallback.
 pub fn load(hash: &str) -> Result<Option<ReadingProgress>, String> {
     let _guard = PROGRESS_LOCK.lock().unwrap();

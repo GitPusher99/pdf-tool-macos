@@ -24,6 +24,7 @@ pub fn run() {
             commands::load_progress,
             commands::save_progress,
             commands::sync_progress,
+            commands::sync_all_progress,
             commands::open_reader_window,
             commands::get_books_directory,
             commands::reveal_in_finder,
