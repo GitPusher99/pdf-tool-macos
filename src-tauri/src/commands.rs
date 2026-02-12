@@ -1,4 +1,5 @@
 use crate::{icloud, pdf_info, progress, window};
+use std::fs;
 use std::path::PathBuf;
 use std::time::Instant;
 
@@ -119,6 +120,84 @@ pub fn reveal_in_finder(path: String) -> Result<(), String> {
 #[tauri::command]
 pub fn is_debug_enabled() -> bool {
     std::env::var("PDF_DEBUG").as_deref() == Ok("1")
+}
+
+#[tauri::command]
+pub fn delete_pdf(file_path: String, hash: String) -> Result<(), String> {
+    let path = PathBuf::from(&file_path);
+    let books_dir = icloud::get_books_dir();
+
+    // Safety: ensure the file is inside the Books directory
+    let canonical_path = path
+        .canonicalize()
+        .map_err(|e| format!("Failed to resolve path: {}", e))?;
+    let canonical_books = books_dir
+        .canonicalize()
+        .map_err(|e| format!("Failed to resolve books dir: {}", e))?;
+    if !canonical_path.starts_with(&canonical_books) {
+        return Err("File is not in the Books directory".to_string());
+    }
+
+    // Move to trash
+    trash::delete(&path).map_err(|e| format!("Failed to move to trash: {}", e))?;
+    log::info!("delete_pdf: moved to trash: {}", file_path);
+
+    // Remove associated progress file if it exists
+    let progress_path = icloud::get_progress_dir().join(format!("{}.json", hash));
+    if progress_path.exists() {
+        let _ = fs::remove_file(&progress_path);
+        log::info!("delete_pdf: removed progress for {}", hash);
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+pub fn rename_pdf(file_path: String, new_filename: String) -> Result<(), String> {
+    let path = PathBuf::from(&file_path);
+    let books_dir = icloud::get_books_dir();
+
+    // Safety: ensure the file is inside the Books directory
+    let canonical_path = path
+        .canonicalize()
+        .map_err(|e| format!("Failed to resolve path: {}", e))?;
+    let canonical_books = books_dir
+        .canonicalize()
+        .map_err(|e| format!("Failed to resolve books dir: {}", e))?;
+    if !canonical_path.starts_with(&canonical_books) {
+        return Err("File is not in the Books directory".to_string());
+    }
+
+    // Validate new filename
+    let new_filename = new_filename.trim().to_string();
+    if new_filename.is_empty() {
+        return Err("Filename cannot be empty".to_string());
+    }
+    if new_filename.contains('/') || new_filename.contains('\\') {
+        return Err("Filename cannot contain path separators".to_string());
+    }
+
+    // Ensure .pdf extension
+    let final_filename = if new_filename.to_lowercase().ends_with(".pdf") {
+        new_filename
+    } else {
+        format!("{}.pdf", new_filename)
+    };
+
+    let new_path = books_dir.join(&final_filename);
+
+    // Prevent overwrite
+    if new_path.exists() {
+        return Err(format!("File '{}' already exists", final_filename));
+    }
+
+    fs::rename(&path, &new_path).map_err(|e| format!("Failed to rename file: {}", e))?;
+    log::info!("rename_pdf: {} -> {}", file_path, new_path.display());
+
+    // Clean stale cache entries for the old path
+    pdf_info::invalidate_cache(&path);
+
+    Ok(())
 }
 
 /// Reset WKWebView native magnification to 1.0 after JS-driven pinch zoom.

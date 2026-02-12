@@ -26,6 +26,8 @@ pub fn run() {
             commands::open_reader_window,
             commands::get_books_directory,
             commands::reveal_in_finder,
+            commands::delete_pdf,
+            commands::rename_pdf,
             commands::is_debug_enabled,
             commands::reset_magnification,
         ])

@@ -40,6 +40,20 @@ export async function revealInFinder(path: string): Promise<void> {
   return invoke("reveal_in_finder", { path });
 }
 
+export async function deletePdf(
+  filePath: string,
+  hash: string,
+): Promise<void> {
+  return invoke("delete_pdf", { filePath, hash });
+}
+
+export async function renamePdf(
+  filePath: string,
+  newFilename: string,
+): Promise<void> {
+  return invoke("rename_pdf", { filePath, newFilename });
+}
+
 export async function isDebugEnabled(): Promise<boolean> {
   return invoke<boolean>("is_debug_enabled");
 }
