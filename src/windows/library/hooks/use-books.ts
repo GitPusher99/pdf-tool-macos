@@ -84,22 +84,44 @@ export function useBooks() {
     };
   }, []);
 
-  // Keep a ref of current book hashes for the sync interval
-  const bookHashesRef = useRef<string[]>([]);
-  useEffect(() => {
-    bookHashesRef.current = books.map((b) => b.hash);
-  }, [books]);
-
-  // Periodically sync all iCloud progress every 3 seconds
+  // Periodically detect book changes and sync iCloud progress every 3 seconds
   useEffect(() => {
     let syncing = false;
     const interval = setInterval(async () => {
       if (syncing) return;
-      const hashes = bookHashesRef.current;
-      if (hashes.length === 0) return;
       syncing = true;
       try {
-        const updated = await syncAllProgress(hashes);
+        // 1. Detect book list changes (additions/removals via iCloud sync)
+        const scanned = await scanBooks();
+        let hashesForSync: string[] = [];
+
+        setBooks((prev) => {
+          const currentHashes = new Set(prev.map((b) => b.hash));
+          const hasChange =
+            currentHashes.size !== scanned.length ||
+            scanned.some((b) => !currentHashes.has(b.hash));
+
+          if (!hasChange) {
+            hashesForSync = prev.map((b) => b.hash);
+            return prev;
+          }
+
+          logger.debug(`Books changed: ${currentHashes.size} -> ${scanned.length}`);
+          const progressMap = new Map(
+            prev.map((b) => [b.hash, b.progress]),
+          );
+          const next = scanned.map((book) => ({
+            ...book,
+            progress: progressMap.get(book.hash),
+          }));
+          hashesForSync = next.map((b) => b.hash);
+          return next;
+        });
+
+        // 2. Sync iCloud reading progress
+        if (hashesForSync.length === 0) return;
+
+        const updated = await syncAllProgress(hashesForSync);
         if (updated.length > 0) {
           const map = new Map(updated.map((p) => [p.hash, p]));
           setBooks((prev) =>
