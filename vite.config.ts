@@ -2,12 +2,21 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
+import pkg from "./package.json";
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
 export default defineConfig(async () => ({
   plugins: [react(), tailwindcss()],
+
+  define: {
+    __APP_LOCALE__: JSON.stringify(
+      process.env.NODE_ENV === "development"
+        ? (pkg as Record<string, unknown>).locale ?? ""
+        : ""
+    ),
+  },
 
   resolve: {
     alias: {

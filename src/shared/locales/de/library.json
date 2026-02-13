@@ -1,0 +1,18 @@
+{
+  "emptyTitle": "Bibliothek ist leer",
+  "emptyDescription": "PDF-Dateien importieren oder im iCloud-Verzeichnis ablegen",
+  "importPdf": "PDF importieren",
+  "sortTitle": "Titel",
+  "sortRecent": "Zuletzt",
+  "sortSize": "Größe",
+  "sortLabel": "Sortierung: {{sort}}",
+  "openFolder": "Ordner öffnen",
+  "confirmDeleteTitle": "Löschen bestätigen",
+  "confirmDeleteDescription": "\"{{title}}\" in den Papierkorb verschieben? Sie können es aus dem Papierkorb wiederherstellen.",
+  "renameTitle": "Umbenennen",
+  "renameDescription": "Geben Sie einen neuen Dateinamen ein. Die Endung .pdf wird automatisch hinzugefügt.",
+  "filenameLabel": "Dateiname",
+  "filenameEmpty": "Dateiname darf nicht leer sein",
+  "revealInFinder": "Im Finder anzeigen",
+  "bookTooltip": "{{title}}\n{{count}} Seiten"
+}

@@ -1,0 +1,18 @@
+{
+  "emptyTitle": "Библиотека пуста",
+  "emptyDescription": "Импортируйте PDF-файлы или поместите их в каталог iCloud",
+  "importPdf": "Импортировать PDF",
+  "sortTitle": "Название",
+  "sortRecent": "Недавние",
+  "sortSize": "Размер",
+  "sortLabel": "Сортировка: {{sort}}",
+  "openFolder": "Открыть папку",
+  "confirmDeleteTitle": "Подтвердить удаление",
+  "confirmDeleteDescription": "Переместить «{{title}}» в Корзину? Вы сможете восстановить его из Корзины.",
+  "renameTitle": "Переименовать",
+  "renameDescription": "Введите новое имя файла. Расширение .pdf будет добавлено автоматически.",
+  "filenameLabel": "Имя файла",
+  "filenameEmpty": "Имя файла не может быть пустым",
+  "revealInFinder": "Показать в Finder",
+  "bookTooltip": "{{title}}\n{{count}} стр."
+}

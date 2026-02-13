@@ -1,0 +1,12 @@
+{
+  "confirm": "Bestätigen",
+  "cancel": "Abbrechen",
+  "delete": "Löschen",
+  "rename": "Umbenennen",
+  "import": "Importieren",
+  "importing": "Importiere...",
+  "search": "Suchen...",
+  "pageCount": "{{count}} Seiten",
+  "appTitle": "PDF-Reader",
+  "close": "Schließen"
+}

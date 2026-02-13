@@ -1,0 +1,13 @@
+{
+  "sidebar": "Seitenleiste",
+  "zoomOut": "Verkleinern",
+  "zoomIn": "Vergrößern",
+  "resetZoom": "Zoom zurücksetzen",
+  "thumbnails": "Vorschaubilder",
+  "outline": "Inhaltsverzeichnis",
+  "noOutline": "Kein Inhaltsverzeichnis verfügbar",
+  "loadFailed": "PDF konnte nicht geladen werden",
+  "noFilePath": "Kein Dateipfad angegeben",
+  "loadError": "PDF konnte nicht geladen werden: {{detail}}",
+  "pageAlt": "Seite {{page}}"
+}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronRight, ChevronDown } from "lucide-react";
 import type { OutlineItem } from "@shared/lib/types";
 import { cn } from "@shared/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface OutlineTreeProps {
   items: OutlineItem[];
@@ -14,10 +15,12 @@ export function OutlineTree({
   onPageSelect,
   currentPage,
 }: OutlineTreeProps) {
+  const { t } = useTranslation("reader");
+
   if (items.length === 0) {
     return (
       <div className="p-4 text-xs text-muted-foreground text-center">
-        此文档没有目录
+        {t("noOutline")}
       </div>
     );
   }

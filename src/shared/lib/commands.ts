@@ -69,3 +69,7 @@ export async function syncAllProgress(
 export async function isDebugEnabled(): Promise<boolean> {
   return invoke<boolean>("is_debug_enabled");
 }
+
+export async function getSystemLocale(): Promise<string> {
+  return invoke<string>("get_system_locale");
+}

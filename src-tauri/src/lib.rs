@@ -1,5 +1,6 @@
 mod commands;
 mod icloud;
+mod locale;
 mod pdf_info;
 mod progress;
 mod watcher;
@@ -32,6 +33,7 @@ pub fn run() {
             commands::rename_pdf,
             commands::is_debug_enabled,
             commands::reset_magnification,
+            commands::get_system_locale,
         ])
         .setup(move |app| {
             let app_handle = app.handle().clone();

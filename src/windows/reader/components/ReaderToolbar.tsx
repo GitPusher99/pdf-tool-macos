@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@shared/components/ui/button";
 import { useTheme } from "@shared/hooks/use-theme";
+import { useTranslation } from "react-i18next";
 
 interface ReaderToolbarProps {
   currentPage: number;
@@ -33,6 +34,7 @@ export function ReaderToolbar({
   sidebarOpen: _sidebarOpen,
   onToggleSidebar,
 }: ReaderToolbarProps) {
+  const { t } = useTranslation("reader");
   const { resolvedTheme, setTheme } = useTheme();
 
   const toggleTheme = () => {
@@ -46,7 +48,7 @@ export function ReaderToolbar({
         size="icon"
         className="size-7"
         onClick={onToggleSidebar}
-        title="侧栏"
+        title={t("sidebar")}
       >
         <PanelLeft className="size-4" />
       </Button>
@@ -82,14 +84,14 @@ export function ReaderToolbar({
         size="icon"
         className="size-7"
         onClick={onZoomOut}
-        title="缩小"
+        title={t("zoomOut")}
       >
         <ZoomOut className="size-4" />
       </Button>
       <button
         className="text-xs tabular-nums min-w-[3rem] text-center hover:bg-accent rounded px-1 py-0.5"
         onClick={onZoomReset}
-        title="重置缩放"
+        title={t("resetZoom")}
       >
         {Math.round(zoom * 100)}%
       </button>
@@ -98,7 +100,7 @@ export function ReaderToolbar({
         size="icon"
         className="size-7"
         onClick={onZoomIn}
-        title="放大"
+        title={t("zoomIn")}
       >
         <ZoomIn className="size-4" />
       </Button>

@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import type { PDFDocumentProxy } from "pdfjs-dist";
+import { useTranslation } from "react-i18next";
 import { cn } from "@shared/lib/utils";
 import { enqueueRender } from "../lib/render-queue";
 import { logger } from "@shared/lib/logger";
@@ -19,6 +20,7 @@ export function ThumbnailList({
   currentPage,
   onPageSelect,
 }: ThumbnailListProps) {
+  const { t } = useTranslation("reader");
   const containerRef = useRef<HTMLDivElement>(null);
   const [thumbnails, setThumbnails] = useState<Map<number, string>>(new Map());
   const [visiblePages, setVisiblePages] = useState<Set<number>>(new Set());
@@ -146,7 +148,7 @@ export function ThumbnailList({
               {thumbUrl ? (
                 <img
                   src={thumbUrl}
-                  alt={`Page ${pageNum}`}
+                  alt={t("pageAlt", { page: pageNum })}
                   className="w-full h-full object-contain"
                   draggable={false}
                 />

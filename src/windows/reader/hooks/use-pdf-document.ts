@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import * as pdfjsLib from "pdfjs-dist";
 import type { PDFDocumentProxy } from "pdfjs-dist";
+import { useTranslation } from "react-i18next";
 import { logger } from "@shared/lib/logger";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -10,6 +11,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 ).toString();
 
 export function usePdfDocument() {
+  const { t } = useTranslation("reader");
   const [pdf, setPdf] = useState<PDFDocumentProxy | null>(null);
   const [pageCount, setPageCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -23,7 +25,7 @@ export function usePdfDocument() {
 
   useEffect(() => {
     if (!filePath) {
-      setError("No file path provided");
+      setError(t("noFilePath"));
       setLoading(false);
       return;
     }
@@ -48,7 +50,7 @@ export function usePdfDocument() {
         }
       } catch (err) {
         if (!cancelled) {
-          setError(`Failed to load PDF: ${err}`);
+          setError(t("loadError", { detail: String(err) }));
           logger.error(`PDF load failed — ${err}`);
         }
       } finally {

@@ -1,0 +1,18 @@
+{
+  "emptyTitle": "ライブラリが空です",
+  "emptyDescription": "PDFファイルをインポートするか、iCloudディレクトリに配置してください",
+  "importPdf": "PDFをインポート",
+  "sortTitle": "タイトル",
+  "sortRecent": "最近",
+  "sortSize": "サイズ",
+  "sortLabel": "並び替え: {{sort}}",
+  "openFolder": "フォルダを開く",
+  "confirmDeleteTitle": "削除の確認",
+  "confirmDeleteDescription": "「{{title}}」をゴミ箱に移動しますか？ゴミ箱から復元できます。",
+  "renameTitle": "名前を変更",
+  "renameDescription": "新しいファイル名を入力してください。.pdf拡張子は自動的に追加されます。",
+  "filenameLabel": "ファイル名",
+  "filenameEmpty": "ファイル名を空にすることはできません",
+  "revealInFinder": "Finderで表示",
+  "bookTooltip": "{{title}}\n{{count}} ページ"
+}

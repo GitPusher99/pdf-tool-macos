@@ -1,0 +1,12 @@
+{
+  "confirm": "확인",
+  "cancel": "취소",
+  "delete": "삭제",
+  "rename": "이름 변경",
+  "import": "가져오기",
+  "importing": "가져오는 중...",
+  "search": "검색...",
+  "pageCount": "{{count}} 페이지",
+  "appTitle": "PDF 리더",
+  "close": "닫기"
+}

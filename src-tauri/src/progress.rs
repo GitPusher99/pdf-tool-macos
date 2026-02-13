@@ -49,9 +49,9 @@ fn read_progress_file(path: &Path) -> Result<Option<ReadingProgress>, String> {
         return Ok(None);
     }
     let data =
-        std::fs::read_to_string(path).map_err(|e| format!("Failed to read progress: {}", e))?;
+        std::fs::read_to_string(path).map_err(|e| format!("read_progress_failed|detail={}", e))?;
     let progress: ReadingProgress =
-        serde_json::from_str(&data).map_err(|e| format!("Failed to parse progress: {}", e))?;
+        serde_json::from_str(&data).map_err(|e| format!("parse_progress_failed|detail={}", e))?;
     Ok(Some(progress))
 }
 
@@ -59,12 +59,12 @@ fn write_progress_file(path: &Path, progress: &ReadingProgress) -> Result<(), St
     let seq = TMP_COUNTER.fetch_add(1, Ordering::Relaxed);
     let tmp_path = path.with_extension(format!("json.{}.tmp", seq));
     let data = serde_json::to_string_pretty(progress)
-        .map_err(|e| format!("Failed to serialize progress: {}", e))?;
+        .map_err(|e| format!("serialize_progress_failed|detail={}", e))?;
     std::fs::write(&tmp_path, &data)
-        .map_err(|e| format!("Failed to write temp progress: {}", e))?;
+        .map_err(|e| format!("write_progress_failed|detail={}", e))?;
     std::fs::rename(&tmp_path, path).map_err(|e| {
         let _ = std::fs::remove_file(&tmp_path);
-        format!("Failed to rename progress file: {}", e)
+        format!("rename_progress_failed|detail={}", e)
     })?;
     Ok(())
 }

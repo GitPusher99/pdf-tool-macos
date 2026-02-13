@@ -4,8 +4,10 @@ import { BookGrid } from "./components/BookGrid";
 import { EmptyState } from "./components/EmptyState";
 import { ScrollArea } from "@shared/components/ui/scroll-area";
 import { Toaster } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export default function App() {
+  const { t } = useTranslation();
   const { books, loading, search, setSearch, sortKey, setSortKey, refresh } =
     useBooks();
 
@@ -15,7 +17,7 @@ export default function App() {
         data-tauri-drag-region
         className="h-12 flex items-center px-4 select-none shrink-0"
       >
-        <h1 className="text-sm font-semibold pl-16 pointer-events-none">PDF Reader</h1>
+        <h1 className="text-sm font-semibold pl-16 pointer-events-none">{t("appTitle")}</h1>
       </div>
 
       <Toolbar

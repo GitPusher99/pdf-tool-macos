@@ -39,12 +39,15 @@ import type { PdfInfo, ReadingProgress } from "@shared/lib/types";
 import { FileText } from "lucide-react";
 import { logger } from "@shared/lib/logger";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { translateError } from "@shared/lib/error-codes";
 
 interface BookCardProps {
   book: PdfInfo & { progress?: ReadingProgress };
 }
 
 export function BookCard({ book }: BookCardProps) {
+  const { t } = useTranslation();
   const cardRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -90,7 +93,7 @@ export function BookCard({ book }: BookCardProps) {
     try {
       await openReaderWindow(book.path, book.hash);
     } catch (e) {
-      toast.error(String(e));
+      toast.error(translateError(String(e)));
     }
   };
 
@@ -100,7 +103,7 @@ export function BookCard({ book }: BookCardProps) {
       setDeleteOpen(false);
     } catch (e) {
       logger.error(`Failed to delete ${book.title}:`, e);
-      setDeleteError(String(e));
+      setDeleteError(translateError(String(e)));
     }
   };
 
@@ -116,14 +119,14 @@ export function BookCard({ book }: BookCardProps) {
     e.preventDefault();
     const trimmed = newName.trim();
     if (!trimmed) {
-      setRenameError("文件名不能为空");
+      setRenameError(t("library:filenameEmpty"));
       return;
     }
     try {
       await renamePdf(book.path, trimmed);
       setRenameOpen(false);
     } catch (err) {
-      setRenameError(String(err));
+      setRenameError(translateError(String(err)));
     }
   };
 
@@ -135,7 +138,7 @@ export function BookCard({ book }: BookCardProps) {
             ref={cardRef}
             className="group flex flex-col cursor-pointer rounded-lg p-2 transition-colors hover:bg-accent"
             onDoubleClick={handleOpen}
-            title={`${book.title}\n${book.page_count} 页`}
+            title={t("library:bookTooltip", { title: book.title, count: book.page_count })}
           >
             <div className="relative aspect-[3/4] w-full overflow-hidden rounded-md bg-muted mb-2 border border-border">
               {loading ? (
@@ -159,7 +162,7 @@ export function BookCard({ book }: BookCardProps) {
               {book.title}
             </p>
             <p className="text-[10px] text-muted-foreground mt-0.5">
-              {book.page_count} 页
+              {t("pageCount", { count: book.page_count })}
             </p>
             {book.progress && book.progress.current_page > 1 && (
               <div className="mt-1.5 flex items-center gap-1.5">
@@ -172,7 +175,7 @@ export function BookCard({ book }: BookCardProps) {
           </div>
         </ContextMenuTrigger>
         <ContextMenuContent>
-          <ContextMenuItem onSelect={handleRenameOpen}>重命名</ContextMenuItem>
+          <ContextMenuItem onSelect={handleRenameOpen}>{t("rename")}</ContextMenuItem>
           <ContextMenuItem
             onSelect={() => {
               setDeleteError("");
@@ -180,11 +183,11 @@ export function BookCard({ book }: BookCardProps) {
             }}
             className="text-destructive focus:text-destructive"
           >
-            删除
+            {t("delete")}
           </ContextMenuItem>
           <ContextMenuSeparator />
           <ContextMenuItem onSelect={() => revealInFinder(book.path)}>
-            在 Finder 中显示
+            {t("library:revealInFinder")}
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
@@ -192,21 +195,21 @@ export function BookCard({ book }: BookCardProps) {
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>确认删除</AlertDialogTitle>
+            <AlertDialogTitle>{t("library:confirmDeleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              确定要将「{book.title}」移到废纸篓吗？此操作可以从废纸篓中恢复。
+              {t("library:confirmDeleteDescription", { title: book.title })}
             </AlertDialogDescription>
             {deleteError && (
               <p className="text-sm text-destructive mt-2">{deleteError}</p>
             )}
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              删除
+              {t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -216,14 +219,14 @@ export function BookCard({ book }: BookCardProps) {
         <DialogContent>
           <form onSubmit={handleRenameSubmit}>
             <DialogHeader>
-              <DialogTitle>重命名</DialogTitle>
+              <DialogTitle>{t("library:renameTitle")}</DialogTitle>
               <DialogDescription>
-                输入新的文件名，将自动添加 .pdf 扩展名。
+                {t("library:renameDescription")}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="new-name">文件名</Label>
+                <Label htmlFor="new-name">{t("library:filenameLabel")}</Label>
                 <Input
                   id="new-name"
                   value={newName}
@@ -244,9 +247,9 @@ export function BookCard({ book }: BookCardProps) {
                 variant="outline"
                 onClick={() => setRenameOpen(false)}
               >
-                取消
+                {t("cancel")}
               </Button>
-              <Button type="submit">确认</Button>
+              <Button type="submit">{t("confirm")}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

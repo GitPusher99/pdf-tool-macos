@@ -1,0 +1,13 @@
+{
+  "sidebar": "側邊欄",
+  "zoomOut": "縮小",
+  "zoomIn": "放大",
+  "resetZoom": "重設縮放",
+  "thumbnails": "縮圖",
+  "outline": "目錄",
+  "noOutline": "沒有可用的目錄",
+  "loadFailed": "PDF 載入失敗",
+  "noFilePath": "未提供檔案路徑",
+  "loadError": "PDF 載入失敗：{{detail}}",
+  "pageAlt": "第 {{page}} 頁"
+}

@@ -1,0 +1,13 @@
+{
+  "sidebar": "Barra lateral",
+  "zoomOut": "Diminuir zoom",
+  "zoomIn": "Aumentar zoom",
+  "resetZoom": "Redefinir zoom",
+  "thumbnails": "Miniaturas",
+  "outline": "Sumário",
+  "noOutline": "Nenhum sumário disponível",
+  "loadFailed": "Falha ao carregar o PDF",
+  "noFilePath": "Nenhum caminho de arquivo fornecido",
+  "loadError": "Falha ao carregar o PDF: {{detail}}",
+  "pageAlt": "Página {{page}}"
+}

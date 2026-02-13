@@ -7,7 +7,7 @@ pub fn open_reader(app_handle: &AppHandle, file_path: &str, hash: &str) -> Resul
     if let Some(window) = app_handle.get_webview_window(&label) {
         window
             .set_focus()
-            .map_err(|e| format!("Failed to focus window: {}", e))?;
+            .map_err(|e| format!("focus_window_failed|detail={}", e))?;
         return Ok(());
     }
 
@@ -22,7 +22,7 @@ pub fn open_reader(app_handle: &AppHandle, file_path: &str, hash: &str) -> Resul
 
     if reader_count >= MAX_READER_WINDOWS {
         return Err(format!(
-            "最多只能同时打开 {} 个阅读窗口，请关闭一些窗口后再试",
+            "max_reader_windows|max={}",
             MAX_READER_WINDOWS
         ));
     }
@@ -30,7 +30,7 @@ pub fn open_reader(app_handle: &AppHandle, file_path: &str, hash: &str) -> Resul
     let title = std::path::Path::new(file_path)
         .file_name()
         .and_then(|n| n.to_str())
-        .unwrap_or("PDF Reader");
+        .unwrap_or("PDF");
 
     let url = format!(
         "src/windows/reader/index.html?path={}&hash={}",
@@ -46,7 +46,7 @@ pub fn open_reader(app_handle: &AppHandle, file_path: &str, hash: &str) -> Resul
             .title_bar_style(tauri::TitleBarStyle::Overlay)
             .hidden_title(true)
             .build()
-            .map_err(|e| format!("Failed to create reader window: {}", e))?;
+            .map_err(|e| format!("create_window_failed|detail={}", e))?;
 
     // Enable trackpad pinch-to-zoom by setting WKWebView allowsMagnification
     #[cfg(target_os = "macos")]

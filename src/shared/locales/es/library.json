@@ -1,0 +1,18 @@
+{
+  "emptyTitle": "La biblioteca está vacía",
+  "emptyDescription": "Importa archivos PDF o colócalos en el directorio de iCloud",
+  "importPdf": "Importar PDF",
+  "sortTitle": "Título",
+  "sortRecent": "Reciente",
+  "sortSize": "Tamaño",
+  "sortLabel": "Ordenar: {{sort}}",
+  "openFolder": "Abrir carpeta",
+  "confirmDeleteTitle": "Confirmar eliminación",
+  "confirmDeleteDescription": "¿Mover \"{{title}}\" a la Papelera? Puedes restaurarlo desde la Papelera.",
+  "renameTitle": "Renombrar",
+  "renameDescription": "Introduce un nuevo nombre de archivo. La extensión .pdf se añadirá automáticamente.",
+  "filenameLabel": "Nombre del archivo",
+  "filenameEmpty": "El nombre del archivo no puede estar vacío",
+  "revealInFinder": "Mostrar en Finder",
+  "bookTooltip": "{{title}}\n{{count}} páginas"
+}

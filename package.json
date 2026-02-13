@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.1.1",
   "type": "module",
+  "locale": "en",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -21,10 +22,12 @@
     "@tauri-apps/plugin-process": "^2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "i18next": "^25.8.7",
     "lucide-react": "^0.469.0",
     "pdfjs-dist": "^4.10.38",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-i18next": "^16.5.4",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.0.2"
   },

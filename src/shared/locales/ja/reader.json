@@ -1,0 +1,13 @@
+{
+  "sidebar": "サイドバー",
+  "zoomOut": "縮小",
+  "zoomIn": "拡大",
+  "resetZoom": "ズームをリセット",
+  "thumbnails": "サムネイル",
+  "outline": "目次",
+  "noOutline": "目次がありません",
+  "loadFailed": "PDFの読み込みに失敗しました",
+  "noFilePath": "ファイルパスが指定されていません",
+  "loadError": "PDFの読み込みに失敗しました：{{detail}}",
+  "pageAlt": "{{page}} ページ"
+}

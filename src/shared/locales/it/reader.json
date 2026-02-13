@@ -1,0 +1,13 @@
+{
+  "sidebar": "Barra laterale",
+  "zoomOut": "Riduci",
+  "zoomIn": "Ingrandisci",
+  "resetZoom": "Reimposta zoom",
+  "thumbnails": "Miniature",
+  "outline": "Indice",
+  "noOutline": "Nessun indice disponibile",
+  "loadFailed": "Impossibile caricare il PDF",
+  "noFilePath": "Nessun percorso file fornito",
+  "loadError": "Impossibile caricare il PDF: {{detail}}",
+  "pageAlt": "Pagina {{page}}"
+}

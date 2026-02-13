@@ -1,0 +1,18 @@
+{
+  "emptyTitle": "A biblioteca está vazia",
+  "emptyDescription": "Importe arquivos PDF ou coloque-os no diretório do iCloud",
+  "importPdf": "Importar PDF",
+  "sortTitle": "Título",
+  "sortRecent": "Recente",
+  "sortSize": "Tamanho",
+  "sortLabel": "Ordenar: {{sort}}",
+  "openFolder": "Abrir pasta",
+  "confirmDeleteTitle": "Confirmar exclusão",
+  "confirmDeleteDescription": "Mover \"{{title}}\" para o Lixo? Você pode restaurá-lo do Lixo.",
+  "renameTitle": "Renomear",
+  "renameDescription": "Digite um novo nome de arquivo. A extensão .pdf será adicionada automaticamente.",
+  "filenameLabel": "Nome do arquivo",
+  "filenameEmpty": "O nome do arquivo não pode estar vazio",
+  "revealInFinder": "Mostrar no Finder",
+  "bookTooltip": "{{title}}\n{{count}} páginas"
+}

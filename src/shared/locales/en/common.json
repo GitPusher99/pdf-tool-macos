@@ -1,0 +1,12 @@
+{
+  "confirm": "Confirm",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "rename": "Rename",
+  "import": "Import",
+  "importing": "Importing...",
+  "search": "Search...",
+  "pageCount": "{{count}} pages",
+  "appTitle": "PDF Reader",
+  "close": "Close"
+}

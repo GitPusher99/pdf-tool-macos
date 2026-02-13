@@ -9,7 +9,7 @@ use crate::icloud;
 pub fn start_watching(app_handle: tauri::AppHandle, stop: Arc<AtomicBool>) -> Result<(), String> {
     let books_dir = icloud::get_books_dir();
     if !books_dir.exists() {
-        return Err("Books directory does not exist".to_string());
+        return Err("books_dir_not_exist".to_string());
     }
 
     let (tx, rx) = mpsc::channel();
@@ -25,11 +25,11 @@ pub fn start_watching(app_handle: tauri::AppHandle, stop: Arc<AtomicBool>) -> Re
             }
         }
     })
-    .map_err(|e| format!("Failed to create watcher: {}", e))?;
+    .map_err(|e| format!("create_watcher_failed|detail={}", e))?;
 
     watcher
         .watch(&books_dir, notify::RecursiveMode::NonRecursive)
-        .map_err(|e| format!("Failed to watch directory: {}", e))?;
+        .map_err(|e| format!("watch_dir_failed|detail={}", e))?;
 
     log::info!("Watching directory: {}", books_dir.display());
 

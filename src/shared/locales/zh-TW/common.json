@@ -1,0 +1,12 @@
+{
+  "confirm": "確認",
+  "cancel": "取消",
+  "delete": "刪除",
+  "rename": "重新命名",
+  "import": "匯入",
+  "importing": "匯入中...",
+  "search": "搜尋...",
+  "pageCount": "{{count}} 頁",
+  "appTitle": "PDF 閱讀器",
+  "close": "關閉"
+}

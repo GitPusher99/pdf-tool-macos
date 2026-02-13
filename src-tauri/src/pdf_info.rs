@@ -24,14 +24,14 @@ pub struct OutlineItem {
 }
 
 pub fn compute_hash(path: &Path) -> Result<String, String> {
-    let file = std::fs::File::open(path).map_err(|e| format!("Failed to open file: {}", e))?;
+    let file = std::fs::File::open(path).map_err(|e| format!("open_file_failed|detail={}", e))?;
     let mut reader = std::io::BufReader::new(file);
     let mut hasher = Sha256::new();
     let mut buf = [0u8; 8192];
     loop {
         let n = reader
             .read(&mut buf)
-            .map_err(|e| format!("Failed to read file: {}", e))?;
+            .map_err(|e| format!("read_file_failed|detail={}", e))?;
         if n == 0 {
             break;
         }
@@ -89,11 +89,11 @@ fn save_hash_cache() {
 }
 
 pub fn compute_hash_cached(path: &Path) -> Result<String, String> {
-    let meta = std::fs::metadata(path).map_err(|e| format!("Failed to get metadata: {}", e))?;
+    let meta = std::fs::metadata(path).map_err(|e| format!("get_metadata_failed|detail={}", e))?;
     let size = meta.len();
     let mtime_secs = meta
         .modified()
-        .map_err(|e| format!("Failed to get mtime: {}", e))?
+        .map_err(|e| format!("get_mtime_failed|detail={}", e))?
         .duration_since(SystemTime::UNIX_EPOCH)
         .map(|d| d.as_secs())
         .unwrap_or(0);
@@ -149,7 +149,7 @@ pub fn extract_info(path: &Path) -> Result<PdfInfo, String> {
     // Check cache by path + mtime
     let mtime = std::fs::metadata(path)
         .and_then(|m| m.modified())
-        .map_err(|e| format!("Failed to get metadata: {}", e))?;
+        .map_err(|e| format!("get_metadata_failed|detail={}", e))?;
 
     let key = (path.to_path_buf(), mtime);
 
@@ -180,7 +180,7 @@ fn extract_info_uncached(path: &Path) -> Result<PdfInfo, String> {
         .to_string();
 
     let file_size = std::fs::metadata(path)
-        .map_err(|e| format!("Failed to get metadata: {}", e))?
+        .map_err(|e| format!("get_metadata_failed|detail={}", e))?
         .len();
 
     let hash_start = Instant::now();
@@ -189,7 +189,7 @@ fn extract_info_uncached(path: &Path) -> Result<PdfInfo, String> {
 
     let load_start = Instant::now();
     let doc =
-        lopdf::Document::load(path).map_err(|e| format!("Failed to load PDF: {}", e))?;
+        lopdf::Document::load(path).map_err(|e| format!("load_pdf_failed|detail={}", e))?;
     log::debug!("  lopdf load: {}ms", load_start.elapsed().as_millis());
 
     let page_count = doc.get_pages().len() as u32;
@@ -218,7 +218,7 @@ fn extract_info_uncached(path: &Path) -> Result<PdfInfo, String> {
             // Fallback: use filename without extension
             path.file_stem()
                 .and_then(|s| s.to_str())
-                .unwrap_or("Untitled")
+                .unwrap_or("")
                 .to_string()
         });
 
@@ -236,7 +236,7 @@ fn extract_info_uncached(path: &Path) -> Result<PdfInfo, String> {
 
 pub fn extract_outline(path: &Path) -> Result<Vec<OutlineItem>, String> {
     let doc =
-        lopdf::Document::load(path).map_err(|e| format!("Failed to load PDF: {}", e))?;
+        lopdf::Document::load(path).map_err(|e| format!("load_pdf_failed|detail={}", e))?;
 
     let mut page_entries: Vec<(u32, lopdf::ObjectId)> = doc.get_pages().into_iter().collect();
     page_entries.sort_by_key(|(num, _)| *num);
@@ -329,7 +329,7 @@ pub fn extract_outline(path: &Path) -> Result<Vec<OutlineItem>, String> {
     // Get the document catalog -> Outlines -> First
     let catalog = doc
         .catalog()
-        .map_err(|e| format!("Failed to get catalog: {}", e))?;
+        .map_err(|e| format!("get_catalog_failed|detail={}", e))?;
 
     let outlines_ref = match catalog.get(b"Outlines") {
         Ok(lopdf::Object::Reference(r)) => *r,
@@ -338,7 +338,7 @@ pub fn extract_outline(path: &Path) -> Result<Vec<OutlineItem>, String> {
 
     let outlines = doc
         .get_object(outlines_ref)
-        .map_err(|e| format!("Failed to get outlines: {}", e))?;
+        .map_err(|e| format!("get_outlines_failed|detail={}", e))?;
 
     let first_id = match outlines {
         lopdf::Object::Dictionary(ref dict) => match dict.get(b"First") {

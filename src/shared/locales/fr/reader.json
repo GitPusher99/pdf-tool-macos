@@ -1,0 +1,13 @@
+{
+  "sidebar": "Barre latérale",
+  "zoomOut": "Dézoomer",
+  "zoomIn": "Zoomer",
+  "resetZoom": "Réinitialiser le zoom",
+  "thumbnails": "Vignettes",
+  "outline": "Sommaire",
+  "noOutline": "Aucun sommaire disponible",
+  "loadFailed": "Échec du chargement du PDF",
+  "noFilePath": "Aucun chemin de fichier fourni",
+  "loadError": "Échec du chargement du PDF : {{detail}}",
+  "pageAlt": "Page {{page}}"
+}

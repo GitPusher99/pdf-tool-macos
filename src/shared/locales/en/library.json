@@ -1,0 +1,18 @@
+{
+  "emptyTitle": "Library is empty",
+  "emptyDescription": "Import PDF files or place them in the iCloud directory",
+  "importPdf": "Import PDF",
+  "sortTitle": "Title",
+  "sortRecent": "Recent",
+  "sortSize": "Size",
+  "sortLabel": "Sort: {{sort}}",
+  "openFolder": "Open Folder",
+  "confirmDeleteTitle": "Confirm Delete",
+  "confirmDeleteDescription": "Move \"{{title}}\" to Trash? You can restore it from the Trash.",
+  "renameTitle": "Rename",
+  "renameDescription": "Enter a new filename. The .pdf extension will be added automatically.",
+  "filenameLabel": "Filename",
+  "filenameEmpty": "Filename cannot be empty",
+  "revealInFinder": "Reveal in Finder",
+  "bookTooltip": "{{title}}\n{{count}} pages"
+}

@@ -1,0 +1,12 @@
+{
+  "confirm": "確認",
+  "cancel": "キャンセル",
+  "delete": "削除",
+  "rename": "名前を変更",
+  "import": "インポート",
+  "importing": "インポート中...",
+  "search": "検索...",
+  "pageCount": "{{count}} ページ",
+  "appTitle": "PDF リーダー",
+  "close": "閉じる"
+}

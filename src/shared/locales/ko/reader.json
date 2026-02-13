@@ -1,0 +1,13 @@
+{
+  "sidebar": "사이드바",
+  "zoomOut": "축소",
+  "zoomIn": "확대",
+  "resetZoom": "확대/축소 초기화",
+  "thumbnails": "미리보기",
+  "outline": "목차",
+  "noOutline": "목차가 없습니다",
+  "loadFailed": "PDF를 불러오지 못했습니다",
+  "noFilePath": "파일 경로가 제공되지 않았습니다",
+  "loadError": "PDF를 불러오지 못했습니다: {{detail}}",
+  "pageAlt": "{{page}} 페이지"
+}

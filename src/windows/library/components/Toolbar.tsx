@@ -6,6 +6,9 @@ import { importPdf, getBooksDirectory, revealInFinder } from "@shared/lib/comman
 import { useTheme } from "@shared/hooks/use-theme";
 import { open } from "@tauri-apps/plugin-dialog";
 import type { SortKey } from "@shared/lib/types";
+import { useTranslation } from "react-i18next";
+import { translateError } from "@shared/lib/error-codes";
+import { toast } from "sonner";
 
 interface ToolbarProps {
   search: string;
@@ -15,10 +18,10 @@ interface ToolbarProps {
   onRefresh: () => void;
 }
 
-const sortLabels: Record<SortKey, string> = {
-  title: "标题",
-  recent: "最近阅读",
-  size: "文件大小",
+const sortLabelKeys: Record<SortKey, string> = {
+  title: "library:sortTitle",
+  recent: "library:sortRecent",
+  size: "library:sortSize",
 };
 
 const sortCycle: SortKey[] = ["title", "recent", "size"];
@@ -30,6 +33,7 @@ export function Toolbar({
   onSortChange,
   onRefresh,
 }: ToolbarProps) {
+  const { t } = useTranslation();
   const { resolvedTheme, setTheme } = useTheme();
   const [importing, setImporting] = useState(false);
 
@@ -48,7 +52,7 @@ export function Toolbar({
         try {
           await importPdf(path);
         } catch (err) {
-          console.error("Import failed:", err);
+          toast.error(translateError(String(err)));
         }
       }
       onRefresh();
@@ -71,12 +75,14 @@ export function Toolbar({
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
 
+  const sortLabel = t(sortLabelKeys[sortKey]);
+
   return (
     <div className="flex items-center gap-2 px-4 pb-3">
       <div className="relative flex-1 max-w-xs">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
-          placeholder="搜索..."
+          placeholder={t("search")}
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           className="pl-8 h-8"
@@ -86,10 +92,10 @@ export function Toolbar({
         variant="ghost"
         size="sm"
         onClick={handleCycleSort}
-        title={`排序: ${sortLabels[sortKey]}`}
+        title={t("library:sortLabel", { sort: sortLabel })}
       >
         <ArrowUpDown className="size-4" />
-        <span className="text-xs">{sortLabels[sortKey]}</span>
+        <span className="text-xs">{sortLabel}</span>
       </Button>
       <div className="flex-1" />
       <Button variant="ghost" size="icon" onClick={toggleTheme} className="size-8">
@@ -100,11 +106,11 @@ export function Toolbar({
         )}
       </Button>
       <Button variant="ghost" size="sm" onClick={handleOpenFolder}>
-        打开目录
+        {t("library:openFolder")}
       </Button>
       <Button size="sm" onClick={handleImport} disabled={importing}>
         {importing ? <Loader2 className="size-4 animate-spin" /> : <Import className="size-4" />}
-        {importing ? "导入中..." : "导入"}
+        {importing ? t("importing") : t("import")}
       </Button>
     </div>
   );

@@ -1,0 +1,13 @@
+{
+  "sidebar": "Sidebar",
+  "zoomOut": "Zoom Out",
+  "zoomIn": "Zoom In",
+  "resetZoom": "Reset Zoom",
+  "thumbnails": "Thumbnails",
+  "outline": "Outline",
+  "noOutline": "No outline available",
+  "loadFailed": "Failed to load PDF",
+  "noFilePath": "No file path provided",
+  "loadError": "Failed to load PDF: {{detail}}",
+  "pageAlt": "Page {{page}}"
+}

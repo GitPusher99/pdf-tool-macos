@@ -59,11 +59,11 @@ pub fn ensure_directories() -> Result<(), String> {
     let progress = get_progress_dir();
     let local_progress = get_local_progress_dir();
 
-    std::fs::create_dir_all(&books).map_err(|e| format!("Failed to create Books dir: {}", e))?;
+    std::fs::create_dir_all(&books).map_err(|e| format!("create_books_dir_failed|detail={}", e))?;
     std::fs::create_dir_all(&progress)
-        .map_err(|e| format!("Failed to create Progress dir: {}", e))?;
+        .map_err(|e| format!("create_progress_dir_failed|detail={}", e))?;
     std::fs::create_dir_all(&local_progress)
-        .map_err(|e| format!("Failed to create local Progress dir: {}", e))?;
+        .map_err(|e| format!("create_local_progress_dir_failed|detail={}", e))?;
 
     log::info!("Directories initialized at: {}", get_base_dir().display());
     log::info!("Local progress dir: {}", local_progress.display());

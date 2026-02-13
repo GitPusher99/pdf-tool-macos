@@ -1,0 +1,18 @@
+{
+  "emptyTitle": "书架为空",
+  "emptyDescription": "导入 PDF 文件或将文件放入 iCloud 目录",
+  "importPdf": "导入 PDF",
+  "sortTitle": "标题",
+  "sortRecent": "最近阅读",
+  "sortSize": "文件大小",
+  "sortLabel": "排序: {{sort}}",
+  "openFolder": "打开目录",
+  "confirmDeleteTitle": "确认删除",
+  "confirmDeleteDescription": "确定要将「{{title}}」移到废纸篓吗？此操作可以从废纸篓中恢复。",
+  "renameTitle": "重命名",
+  "renameDescription": "输入新的文件名，将自动添加 .pdf 扩展名。",
+  "filenameLabel": "文件名",
+  "filenameEmpty": "文件名不能为空",
+  "revealInFinder": "在 Finder 中显示",
+  "bookTooltip": "{{title}}\n{{count}} 页"
+}

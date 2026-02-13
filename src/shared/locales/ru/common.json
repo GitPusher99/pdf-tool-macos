@@ -1,0 +1,12 @@
+{
+  "confirm": "Подтвердить",
+  "cancel": "Отмена",
+  "delete": "Удалить",
+  "rename": "Переименовать",
+  "import": "Импорт",
+  "importing": "Импорт...",
+  "search": "Поиск...",
+  "pageCount": "{{count}} стр.",
+  "appTitle": "PDF Читалка",
+  "close": "Закрыть"
+}

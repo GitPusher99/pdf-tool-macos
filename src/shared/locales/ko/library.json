@@ -1,0 +1,18 @@
+{
+  "emptyTitle": "라이브러리가 비어 있습니다",
+  "emptyDescription": "PDF 파일을 가져오거나 iCloud 디렉토리에 넣어주세요",
+  "importPdf": "PDF 가져오기",
+  "sortTitle": "제목",
+  "sortRecent": "최근",
+  "sortSize": "크기",
+  "sortLabel": "정렬: {{sort}}",
+  "openFolder": "폴더 열기",
+  "confirmDeleteTitle": "삭제 확인",
+  "confirmDeleteDescription": "\"{{title}}\"을(를) 휴지통으로 이동하시겠습니까? 휴지통에서 복원할 수 있습니다.",
+  "renameTitle": "이름 변경",
+  "renameDescription": "새 파일 이름을 입력하세요. .pdf 확장자가 자동으로 추가됩니다.",
+  "filenameLabel": "파일 이름",
+  "filenameEmpty": "파일 이름은 비워둘 수 없습니다",
+  "revealInFinder": "Finder에서 보기",
+  "bookTooltip": "{{title}}\n{{count}} 페이지"
+}

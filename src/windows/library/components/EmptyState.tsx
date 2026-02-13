@@ -3,12 +3,16 @@ import { BookOpen, Loader2 } from "lucide-react";
 import { Button } from "@shared/components/ui/button";
 import { importPdf } from "@shared/lib/commands";
 import { open } from "@tauri-apps/plugin-dialog";
+import { useTranslation } from "react-i18next";
+import { translateError } from "@shared/lib/error-codes";
+import { toast } from "sonner";
 
 interface EmptyStateProps {
   onRefresh: () => void;
 }
 
 export function EmptyState({ onRefresh }: EmptyStateProps) {
+  const { t } = useTranslation();
   const [importing, setImporting] = useState(false);
 
   const handleImport = async () => {
@@ -26,7 +30,7 @@ export function EmptyState({ onRefresh }: EmptyStateProps) {
         try {
           await importPdf(path);
         } catch (err) {
-          console.error("Import failed:", err);
+          toast.error(translateError(String(err)));
         }
       }
       onRefresh();
@@ -39,12 +43,12 @@ export function EmptyState({ onRefresh }: EmptyStateProps) {
     <div className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground">
       <BookOpen className="size-16 opacity-30" />
       <div className="text-center">
-        <p className="text-sm font-medium">书架为空</p>
-        <p className="text-xs mt-1">导入 PDF 文件或将文件放入 iCloud 目录</p>
+        <p className="text-sm font-medium">{t("library:emptyTitle")}</p>
+        <p className="text-xs mt-1">{t("library:emptyDescription")}</p>
       </div>
       <Button variant="outline" size="sm" onClick={handleImport} disabled={importing}>
         {importing ? <Loader2 className="size-4 animate-spin mr-1" /> : null}
-        {importing ? "导入中..." : "导入 PDF"}
+        {importing ? t("importing") : t("library:importPdf")}
       </Button>
     </div>
   );

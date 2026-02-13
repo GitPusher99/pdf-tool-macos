@@ -1,0 +1,13 @@
+{
+  "sidebar": "侧栏",
+  "zoomOut": "缩小",
+  "zoomIn": "放大",
+  "resetZoom": "重置缩放",
+  "thumbnails": "缩略图",
+  "outline": "目录",
+  "noOutline": "此文档没有目录",
+  "loadFailed": "加载 PDF 失败",
+  "noFilePath": "未提供文件路径",
+  "loadError": "PDF 加载失败：{{detail}}",
+  "pageAlt": "第 {{page}} 页"
+}

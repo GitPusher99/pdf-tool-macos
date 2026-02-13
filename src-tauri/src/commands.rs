@@ -1,4 +1,4 @@
-use crate::{icloud, pdf_info, progress, window};
+use crate::{icloud, locale, pdf_info, progress, window};
 use std::fs;
 use std::path::PathBuf;
 use std::time::Instant;
@@ -18,7 +18,7 @@ pub fn scan_books() -> Result<Vec<pdf_info::PdfInfo>, String> {
     let mut books = Vec::new();
     let mut pdf_count = 0;
     let entries =
-        std::fs::read_dir(&books_dir).map_err(|e| format!("Failed to read directory: {}", e))?;
+        std::fs::read_dir(&books_dir).map_err(|e| format!("read_dir_failed|detail={}", e))?;
 
     for entry in entries.flatten() {
         let path = entry.path();
@@ -58,22 +58,22 @@ pub fn scan_books() -> Result<Vec<pdf_info::PdfInfo>, String> {
 pub fn import_pdf(source_path: String) -> Result<pdf_info::PdfInfo, String> {
     let source = PathBuf::from(&source_path);
     if !source.exists() {
-        return Err("Source file does not exist".to_string());
+        return Err("source_not_exist".to_string());
     }
 
     let filename = source
         .file_name()
-        .ok_or("Invalid filename")?
+        .ok_or("invalid_filename")?
         .to_string_lossy()
         .to_string();
 
     let dest = icloud::get_books_dir().join(&filename);
 
     if dest.exists() {
-        return Err(format!("File '{}' already exists in library", filename));
+        return Err(format!("file_already_exists|filename={}", filename));
     }
 
-    std::fs::copy(&source, &dest).map_err(|e| format!("Failed to copy file: {}", e))?;
+    std::fs::copy(&source, &dest).map_err(|e| format!("copy_failed|detail={}", e))?;
 
     pdf_info::extract_info(&dest)
 }
@@ -129,7 +129,7 @@ pub fn reveal_in_finder(path: String) -> Result<(), String> {
         .arg("-R")
         .arg(&path)
         .spawn()
-        .map_err(|e| format!("Failed to reveal in Finder: {}", e))?;
+        .map_err(|e| format!("reveal_failed|detail={}", e))?;
     Ok(())
 }
 
@@ -146,16 +146,16 @@ pub fn delete_pdf(file_path: String, hash: String) -> Result<(), String> {
     // Safety: ensure the file is inside the Books directory
     let canonical_path = path
         .canonicalize()
-        .map_err(|e| format!("Failed to resolve path: {}", e))?;
+        .map_err(|e| format!("resolve_path_failed|detail={}", e))?;
     let canonical_books = books_dir
         .canonicalize()
-        .map_err(|e| format!("Failed to resolve books dir: {}", e))?;
+        .map_err(|e| format!("resolve_books_dir_failed|detail={}", e))?;
     if !canonical_path.starts_with(&canonical_books) {
-        return Err("File is not in the Books directory".to_string());
+        return Err("file_not_in_books".to_string());
     }
 
     // Move to trash
-    trash::delete(&path).map_err(|e| format!("Failed to move to trash: {}", e))?;
+    trash::delete(&path).map_err(|e| format!("trash_failed|detail={}", e))?;
     log::info!("delete_pdf: moved to trash: {}", file_path);
 
     // Remove associated progress files (both local and central)
@@ -173,21 +173,21 @@ pub fn rename_pdf(file_path: String, new_filename: String) -> Result<(), String>
     // Safety: ensure the file is inside the Books directory
     let canonical_path = path
         .canonicalize()
-        .map_err(|e| format!("Failed to resolve path: {}", e))?;
+        .map_err(|e| format!("resolve_path_failed|detail={}", e))?;
     let canonical_books = books_dir
         .canonicalize()
-        .map_err(|e| format!("Failed to resolve books dir: {}", e))?;
+        .map_err(|e| format!("resolve_books_dir_failed|detail={}", e))?;
     if !canonical_path.starts_with(&canonical_books) {
-        return Err("File is not in the Books directory".to_string());
+        return Err("file_not_in_books".to_string());
     }
 
     // Validate new filename
     let new_filename = new_filename.trim().to_string();
     if new_filename.is_empty() {
-        return Err("Filename cannot be empty".to_string());
+        return Err("filename_empty".to_string());
     }
     if new_filename.contains('/') || new_filename.contains('\\') {
-        return Err("Filename cannot contain path separators".to_string());
+        return Err("filename_invalid_separator".to_string());
     }
 
     // Ensure .pdf extension
@@ -201,16 +201,21 @@ pub fn rename_pdf(file_path: String, new_filename: String) -> Result<(), String>
 
     // Prevent overwrite
     if new_path.exists() {
-        return Err(format!("File '{}' already exists", final_filename));
+        return Err(format!("rename_file_exists|filename={}", final_filename));
     }
 
-    fs::rename(&path, &new_path).map_err(|e| format!("Failed to rename file: {}", e))?;
+    fs::rename(&path, &new_path).map_err(|e| format!("rename_failed|detail={}", e))?;
     log::info!("rename_pdf: {} -> {}", file_path, new_path.display());
 
     // Clean stale cache entries for the old path
     pdf_info::invalidate_cache(&path);
 
     Ok(())
+}
+
+#[tauri::command]
+pub fn get_system_locale() -> String {
+    locale::get_system_locale()
 }
 
 /// Reset WKWebView native magnification to 1.0 after JS-driven pinch zoom.

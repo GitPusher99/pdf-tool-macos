@@ -5,6 +5,7 @@ import { getPdfOutline } from "@shared/lib/commands";
 import { ThumbnailList } from "./ThumbnailList";
 import { OutlineTree } from "./OutlineTree";
 import { cn } from "@shared/lib/utils";
+import { useTranslation } from "react-i18next";
 
 type SidebarTab = "thumbnails" | "outline";
 
@@ -23,6 +24,7 @@ export function Sidebar({
   onPageSelect,
   filePath,
 }: SidebarProps) {
+  const { t } = useTranslation("reader");
   const [tab, setTab] = useState<SidebarTab>("thumbnails");
   const [outline, setOutline] = useState<OutlineItem[]>([]);
 
@@ -44,7 +46,7 @@ export function Sidebar({
           )}
           onClick={() => setTab("thumbnails")}
         >
-          缩略图
+          {t("thumbnails")}
         </button>
         <button
           className={cn(
@@ -55,7 +57,7 @@ export function Sidebar({
           )}
           onClick={() => setTab("outline")}
         >
-          目录
+          {t("outline")}
         </button>
       </div>
 

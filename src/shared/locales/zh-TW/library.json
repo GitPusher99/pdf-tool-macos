@@ -1,0 +1,18 @@
+{
+  "emptyTitle": "書庫為空",
+  "emptyDescription": "匯入 PDF 檔案或將其放入 iCloud 目錄",
+  "importPdf": "匯入 PDF",
+  "sortTitle": "標題",
+  "sortRecent": "最近",
+  "sortSize": "大小",
+  "sortLabel": "排序：{{sort}}",
+  "openFolder": "開啟資料夾",
+  "confirmDeleteTitle": "確認刪除",
+  "confirmDeleteDescription": "將「{{title}}」移至垃圾桶？您可以從垃圾桶中恢復。",
+  "renameTitle": "重新命名",
+  "renameDescription": "輸入新的檔案名稱。會自動加上 .pdf 副檔名。",
+  "filenameLabel": "檔案名稱",
+  "filenameEmpty": "檔案名稱不能為空",
+  "revealInFinder": "在 Finder 中顯示",
+  "bookTooltip": "{{title}}\n{{count}} 頁"
+}

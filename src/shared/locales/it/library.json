@@ -1,0 +1,18 @@
+{
+  "emptyTitle": "La libreria è vuota",
+  "emptyDescription": "Importa file PDF o posizionali nella directory di iCloud",
+  "importPdf": "Importa PDF",
+  "sortTitle": "Titolo",
+  "sortRecent": "Recente",
+  "sortSize": "Dimensione",
+  "sortLabel": "Ordina: {{sort}}",
+  "openFolder": "Apri cartella",
+  "confirmDeleteTitle": "Conferma eliminazione",
+  "confirmDeleteDescription": "Spostare \"{{title}}\" nel Cestino? Puoi ripristinarlo dal Cestino.",
+  "renameTitle": "Rinomina",
+  "renameDescription": "Inserisci un nuovo nome file. L'estensione .pdf verrà aggiunta automaticamente.",
+  "filenameLabel": "Nome file",
+  "filenameEmpty": "Il nome del file non può essere vuoto",
+  "revealInFinder": "Mostra nel Finder",
+  "bookTooltip": "{{title}}\n{{count}} pagine"
+}

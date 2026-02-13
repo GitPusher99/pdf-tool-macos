@@ -6,8 +6,10 @@ import { PdfViewer } from "./components/PdfViewer";
 import { ReaderToolbar } from "./components/ReaderToolbar";
 import { Sidebar } from "./components/Sidebar";
 import type { ReadingProgress } from "@shared/lib/types";
+import { useTranslation } from "react-i18next";
 
 export default function App() {
+  const { t } = useTranslation("reader");
   const { pdf, pageCount, loading, error, filePath, hash } = usePdfDocument();
 
   const fileName = filePath.split("/").pop() || "";
@@ -90,7 +92,7 @@ export default function App() {
   if (error || !pdf) {
     return (
       <div className="h-screen flex items-center justify-center bg-background text-destructive">
-        <p className="text-sm">{error || "Failed to load PDF"}</p>
+        <p className="text-sm">{error || t("loadFailed")}</p>
       </div>
     );
   }
