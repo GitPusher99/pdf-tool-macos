@@ -54,9 +54,19 @@ pub fn run() {
         })
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
-        .run(move |_app, event| {
-            if let tauri::RunEvent::Exit = event {
-                watcher_stop.store(true, Ordering::Relaxed);
+        .run(move |app, event| {
+            match &event {
+                tauri::RunEvent::WindowEvent {
+                    label,
+                    event: tauri::WindowEvent::CloseRequested { .. },
+                    ..
+                } if label == "library" => {
+                    app.exit(0);
+                }
+                tauri::RunEvent::Exit => {
+                    watcher_stop.store(true, Ordering::Relaxed);
+                }
+                _ => {}
             }
         });
 }
