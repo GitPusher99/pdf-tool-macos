@@ -3,6 +3,7 @@ import { Toolbar } from "./components/Toolbar";
 import { BookGrid } from "./components/BookGrid";
 import { EmptyState } from "./components/EmptyState";
 import { ScrollArea } from "@shared/components/ui/scroll-area";
+import { Toaster } from "sonner";
 
 export default function App() {
   const { books, loading, search, setSearch, sortKey, setSortKey, refresh } =
@@ -36,6 +37,7 @@ export default function App() {
           <BookGrid books={books} />
         )}
       </ScrollArea>
+      <Toaster position="bottom-center" richColors />
     </div>
   );
 }

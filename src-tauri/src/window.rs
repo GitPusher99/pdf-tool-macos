@@ -11,6 +11,22 @@ pub fn open_reader(app_handle: &AppHandle, file_path: &str, hash: &str) -> Resul
         return Ok(());
     }
 
+    // Limit max reader windows
+    const MAX_READER_WINDOWS: usize = 3;
+
+    let reader_count = app_handle
+        .webview_windows()
+        .keys()
+        .filter(|l| l.starts_with("reader-"))
+        .count();
+
+    if reader_count >= MAX_READER_WINDOWS {
+        return Err(format!(
+            "最多只能同时打开 {} 个阅读窗口，请关闭一些窗口后再试",
+            MAX_READER_WINDOWS
+        ));
+    }
+
     let title = std::path::Path::new(file_path)
         .file_name()
         .and_then(|n| n.to_str())

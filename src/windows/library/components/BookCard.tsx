@@ -38,6 +38,7 @@ import {
 import type { PdfInfo, ReadingProgress } from "@shared/lib/types";
 import { FileText } from "lucide-react";
 import { logger } from "@shared/lib/logger";
+import { toast } from "sonner";
 
 interface BookCardProps {
   book: PdfInfo & { progress?: ReadingProgress };
@@ -85,8 +86,12 @@ export function BookCard({ book }: BookCardProps) {
       )
     : 0;
 
-  const handleOpen = () => {
-    openReaderWindow(book.path, book.hash);
+  const handleOpen = async () => {
+    try {
+      await openReaderWindow(book.path, book.hash);
+    } catch (e) {
+      toast.error(String(e));
+    }
   };
 
   const handleDelete = async () => {
