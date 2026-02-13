@@ -9,6 +9,8 @@ import type { ReadingProgress } from "@shared/lib/types";
 
 export default function App() {
   const { pdf, pageCount, loading, error, filePath, hash } = usePdfDocument();
+
+  const fileName = filePath.split("/").pop() || "";
   const { zoom, setZoom, zoomIn, zoomOut, resetZoom } = useZoom();
   const [currentPage, setCurrentPage] = useState(1);
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -95,10 +97,14 @@ export default function App() {
 
   return (
     <div className="h-screen flex flex-col bg-background text-foreground">
-      <div className="h-12 shrink-0 select-none flex">
+      <div className="h-12 shrink-0 select-none flex items-center">
         {/* Traffic light safe zone */}
         <div className="w-[70px] shrink-0" />
-        <div data-tauri-drag-region className="flex-1 h-full" />
+        <div data-tauri-drag-region className="flex-1 h-full flex items-center justify-center">
+          <span className="text-xs text-muted-foreground truncate max-w-[60%] pointer-events-none">
+            {fileName}
+          </span>
+        </div>
       </div>
 
       <ReaderToolbar

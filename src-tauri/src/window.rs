@@ -11,6 +11,11 @@ pub fn open_reader(app_handle: &AppHandle, file_path: &str, hash: &str) -> Resul
         return Ok(());
     }
 
+    let title = std::path::Path::new(file_path)
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("PDF Reader");
+
     let url = format!(
         "src/windows/reader/index.html?path={}&hash={}",
         urlencoding::encode(file_path),
@@ -19,7 +24,7 @@ pub fn open_reader(app_handle: &AppHandle, file_path: &str, hash: &str) -> Resul
 
     let webview_window =
         WebviewWindowBuilder::new(app_handle, &label, WebviewUrl::App(url.into()))
-            .title("PDF Reader")
+            .title(title)
             .inner_size(900.0, 800.0)
             .min_inner_size(500.0, 400.0)
             .title_bar_style(tauri::TitleBarStyle::Overlay)
