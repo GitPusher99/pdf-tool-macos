@@ -65,25 +65,12 @@ jobs:
       - name: List artifacts
         run: ls -lh artifacts/
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: artifacts/*.dmg
-          generate_release_notes: true
-          body: |
-            ## Download
+      - name: Upload DMG to release
+        run: gh release upload "${{ github.ref_name }}" artifacts/*.dmg --repo "${{ github.repository }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-            | File | Mac Type |
-            |------|----------|
-            | `*_aarch64.dmg` | Apple Silicon (M1/M2/M3/M4) |
-            | `*_x86_64.dmg` | Intel |
-
-            ## Install
-
-            This app is not notarized by Apple. After downloading, run this command in Terminal before opening the DMG:
-
-            ```bash
-            xattr -cr ~/Downloads/PDF\ Reader_*.dmg
-            ```
-
-            Then double-click the DMG and drag the app to Applications.
+      - name: Publish release
+        run: gh release edit "${{ github.ref_name }}" --draft=false --repo "${{ github.repository }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
